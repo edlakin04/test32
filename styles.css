@@ -1,7 +1,6 @@
 :root {
   --bg: #070a12;
   --panel: rgba(255, 255, 255, 0.06);
-  --border: rgba(255, 255, 255, 0.10);
   --text: rgba(255, 255, 255, 0.90);
   --muted: rgba(255, 255, 255, 0.62);
 
@@ -12,6 +11,7 @@
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
   --radius-lg: 22px;
 
+  /* Header title should be far-left of screen */
   --max: 1180px;
 }
 
@@ -53,10 +53,10 @@ body {
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
+/* Wider header so title sits far-left of screen */
 .header-inner {
   position: relative;
   z-index: 2;
-  max-width: var(--max);
   margin: 0 auto;
   padding: 18px 18px 10px;
   display: flex;
@@ -64,24 +64,26 @@ body {
   justify-content: space-between;
   gap: 16px;
 }
+.header-inner-wide {
+  max-width: 100%;
+}
 
 .brand-title {
   margin: 0;
   font-size: 19px;
-  letter-spacing: 0.45px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.96);
+  letter-spacing: 0.55px;
+  font-weight: 1000;
+  color: rgba(255,255,255,0.98);
 }
 
-.nav-wrap {
+.subheader { position: relative; z-index: 2; }
+.subheader-inner {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 0 18px 14px;
-  position: relative;
-  z-index: 2;
+  padding: 0 18px 10px;
 }
-.nav-wrap.is-hidden { display: none; }
 
+/* Nav centered in its own subtle subheader area */
 .nav {
   display: flex;
   gap: 18px;
@@ -95,7 +97,7 @@ body {
   border: none;
   background: transparent;
   color: rgba(255,255,255,0.70);
-  font-weight: 700;
+  font-weight: 750;
   letter-spacing: 0.2px;
   padding: 8px 0;
   cursor: pointer;
@@ -105,7 +107,6 @@ body {
 .nav-link.is-active { color: rgba(255,255,255,0.98); }
 
 .nav-divider {
-  margin-top: 10px;
   height: 1px;
   width: 100%;
   background: linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03), rgba(255,255,255,0.10));
@@ -123,7 +124,7 @@ body {
 .view { display: none; }
 .view.is-visible { display: block; }
 
-/* Banner (only used on My Links + Analytics) */
+/* Banner ONLY used on My Links + Analytics */
 .banner {
   position: sticky;
   top: 92px;
@@ -143,9 +144,10 @@ body {
   padding: 12px 12px 12px 14px;
 }
 .banner-inner { display: grid; gap: 2px; }
-.banner-title { font-weight: 950; color: rgba(255,255,255,0.92); letter-spacing: -0.2px; }
+.banner-title { font-weight: 1000; color: rgba(255,255,255,0.92); letter-spacing: -0.25px; }
 .banner-sub { color: rgba(255,255,255,0.62); font-size: 12.5px; }
 
+/* Home hero */
 .hero-centered {
   display: grid;
   place-items: center;
@@ -153,33 +155,8 @@ body {
   padding: 22px 0 8px;
 }
 
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 10px 34px rgba(0,0,0,0.35);
-  color: rgba(255,255,255,0.78);
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  position: relative;
-  overflow: hidden;
-}
-.pill-glow {
-  position: absolute;
-  width: 180px;
-  height: 120px;
-  left: -40px;
-  top: -30px;
-  background: rgba(34, 211, 238, 0.18);
-  filter: blur(22px);
-}
-
 .hero-title {
-  margin: 18px 0 12px;
+  margin: 8px 0 12px;
   font-size: clamp(30px, 3.8vw, 46px);
   line-height: 1.08;
   letter-spacing: -0.7px;
@@ -224,13 +201,13 @@ body {
   font-size: 12.5px;
 }
 
-/* Buttons (polished) */
+/* Buttons */
 .btn {
   border: none;
   cursor: pointer;
   border-radius: 999px;
   padding: 12px 16px;
-  font-weight: 950;
+  font-weight: 1000;
   letter-spacing: 0.2px;
   color: rgba(255,255,255,0.92);
   transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease, background 140ms ease;
@@ -246,9 +223,9 @@ body {
   background: linear-gradient(135deg, rgba(124, 92, 255, 0.92), rgba(34, 211, 238, 0.80));
   box-shadow: 0 18px 55px rgba(124, 92, 255, 0.18);
 }
-.btn-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
 
-/* Header button: slightly dulled when connected */
+/* Connected header button: duller / premium */
 .btn-header.is-connected {
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.12);
@@ -271,7 +248,7 @@ body {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
   padding: 10px 14px;
-  font-weight: 950;
+  font-weight: 1000;
 }
 .btn-ghost:hover { background: rgba(255,255,255,0.09); transform: translateY(-1px); }
 
@@ -334,9 +311,9 @@ body {
   margin-bottom: 12px;
 }
 .panel-kicker {
-  font-weight: 950;
+  font-weight: 1000;
   letter-spacing: 0.22px;
-  color: rgba(255,255,255,0.90);
+  color: rgba(255,255,255,0.92);
   font-size: 14px;
 }
 .panel-desc {
@@ -376,7 +353,7 @@ body {
 .table th, .table td { padding: 13px 12px; text-align: left; }
 .table thead th {
   color: rgba(255,255,255,0.72);
-  font-weight: 950;
+  font-weight: 1000;
   border-bottom: 1px solid rgba(255,255,255,0.10);
   background: rgba(0,0,0,0.12);
   position: sticky;
@@ -390,7 +367,7 @@ body {
 .table tbody tr:hover td { background: rgba(255,255,255,0.03); }
 .table tbody tr:last-child td { border-bottom: none; }
 
-.td-strong { font-weight: 950; color: rgba(255,255,255,0.92); }
+.td-strong { font-weight: 1000; color: rgba(255,255,255,0.92); }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 .deal {
   display: inline-flex;
@@ -398,11 +375,11 @@ body {
   border-radius: 999px;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.10);
-  font-weight: 950;
+  font-weight: 1000;
   color: rgba(255,255,255,0.88);
 }
 
-/* Reveal overlay */
+/* Reveal overlay (no button) */
 .reveal-overlay {
   position: absolute;
   inset: 0;
@@ -432,7 +409,6 @@ body {
   color: rgba(255,255,255,0.62);
   font-size: 12.8px;
   line-height: 1.55;
-  margin-bottom: 12px;
 }
 
 /* Locked text blocks */
@@ -452,9 +428,7 @@ body {
   gap: 14px;
   margin-bottom: 14px;
 }
-@media (max-width: 980px) {
-  .analytics-grid { grid-template-columns: 1fr; }
-}
+@media (max-width: 980px) { .analytics-grid { grid-template-columns: 1fr; } }
 
 .stat-card { padding: 14px; }
 .stat-top {
@@ -464,11 +438,11 @@ body {
   gap: 10px;
   margin-bottom: 10px;
 }
-.stat-label { font-weight: 950; color: rgba(255,255,255,0.78); }
+.stat-label { font-weight: 1000; color: rgba(255,255,255,0.78); }
 .stat-pill {
   padding: 7px 10px;
   border-radius: 999px;
-  font-weight: 950;
+  font-weight: 1000;
   font-size: 12px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.05);
@@ -558,13 +532,16 @@ body {
   margin: 0 auto;
 }
 
-.how-hero {
+.how-hero,
+.how-step,
+.how-footer-card {
   border-radius: 22px;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow: var(--shadow);
-  padding: 18px;
 }
+
+.how-hero { padding: 18px; }
 
 .how-hero-title {
   font-weight: 1000;
@@ -593,38 +570,18 @@ body {
 }
 @media (max-width: 980px) { .how-steps { grid-template-columns: 1fr; } }
 
-.how-step {
-  border-radius: 22px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: var(--shadow);
-  padding: 16px;
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
-
+.how-step { padding: 16px; display: flex; gap: 14px; align-items: flex-start; }
 .how-step-num {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  display: grid;
-  place-items: center;
+  width: 44px; height: 44px; border-radius: 16px;
+  display: grid; place-items: center;
   font-weight: 1000;
   background: linear-gradient(135deg, rgba(124, 92, 255, 0.26), rgba(34, 211, 238, 0.14));
   border: 1px solid rgba(255,255,255,0.10);
 }
-
 .how-step-title { font-weight: 1000; color: rgba(255,255,255,0.94); margin-bottom: 6px; }
 .how-step-text { color: rgba(255,255,255,0.62); line-height: 1.6; }
 
-.how-footer-card {
-  border-radius: 22px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: var(--shadow);
-  padding: 18px;
-}
+.how-footer-card { padding: 18px; }
 .how-footer-title { font-weight: 1000; color: rgba(255,255,255,0.94); margin-bottom: 8px; }
 .how-footer-text { color: rgba(255,255,255,0.62); line-height: 1.65; }
 
@@ -650,7 +607,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 950;
+  font-weight: 1000;
   color: rgba(255,255,255,0.78);
 }
 .footer-dot {
