@@ -8,18 +8,18 @@ const state = {
 
 // Partner table data (example placeholders)
 const PARTNERS = [
-  { name: "NovaSwap", category: "DEX", url: "https://novaswap.exchange/affiliates" },
-  { name: "ArcadePerps", category: "Perps", url: "https://arcadeperps.io/partners/apply" },
-  { name: "StableBridge", category: "On/Off-ramp", url: "https://stablebridge.com/affiliate-program" },
-  { name: "FrostWallet", category: "Wallet", url: "https://frostwallet.app/affiliates" },
-  { name: "KiteLaunch", category: "Launchpad", url: "https://kitelaunch.xyz/affiliate" },
-  { name: "PulseStake", category: "Staking", url: "https://pulsestake.finance/partners" },
-  { name: "OrbitLend", category: "Lending", url: "https://orbitlend.io/affiliate" },
-  { name: "DeltaOTC", category: "OTC", url: "https://deltaotc.market/affiliates" },
-  { name: "MirageNFT", category: "NFT", url: "https://miragenft.art/affiliate-program" },
-  { name: "ApexSignals", category: "Signals", url: "https://apexsignals.trade/partners" },
-  { name: "ZenBridge", category: "Bridge", url: "https://zenbridge.network/affiliate" },
-  { name: "VoltFutures", category: "Futures", url: "https://voltfutures.exchange/affiliate" },
+  { name: "NovaSwap", url: "https://novaswap.exchange/affiliates" },
+  { name: "ArcadePerps", url: "https://arcadeperps.io/partners/apply" },
+  { name: "StableBridge", url: "https://stablebridge.com/affiliate-program" },
+  { name: "FrostWallet", url: "https://frostwallet.app/affiliates" },
+  { name: "KiteLaunch", url: "https://kitelaunch.xyz/affiliate" },
+  { name: "PulseStake", url: "https://pulsestake.finance/partners" },
+  { name: "OrbitLend", url: "https://orbitlend.io/affiliate" },
+  { name: "DeltaOTC", url: "https://deltaotc.market/affiliates" },
+  { name: "MirageNFT", url: "https://miragenft.art/affiliate-program" },
+  { name: "ApexSignals", url: "https://apexsignals.trade/partners" },
+  { name: "ZenBridge", url: "https://zenbridge.network/affiliate" },
+  { name: "VoltFutures", url: "https://voltfutures.exchange/affiliate" },
 ];
 
 function getPhantom() {
@@ -33,28 +33,15 @@ function shortAddress(addr) {
   return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
-function maskName(name) {
-  if (!name) return "—";
-  if (name.length <= 3) return "★".repeat(name.length);
-  const head = name.slice(0, 1);
-  const tail = name.slice(-1);
-  const stars = "★".repeat(Math.max(4, name.length - 2));
-  return `${head}${stars}${tail}`;
+function maskAll(text) {
+  if (!text) return "—";
+  // fully star out (keep length feel)
+  return "★".repeat(Math.max(10, text.length));
 }
 
 function maskUrl(url) {
-  // Keep protocol + first 2 + last 3 visible, star out the rest
-  if (!url) return "—";
-  const protoMatch = url.match(/^(https?:\/\/)/i);
-  const proto = protoMatch ? protoMatch[1] : "";
-  const rest = proto ? url.slice(proto.length) : url;
-
-  if (rest.length <= 8) return proto + "★★★★";
-
-  const head = rest.slice(0, 2);
-  const tail = rest.slice(-3);
-  const stars = "★".repeat(Math.max(10, rest.length - (head.length + tail.length)));
-  return proto + head + stars + tail;
+  // fully star out url length feel (no hints)
+  return maskAll(url);
 }
 
 function setActiveNav(view) {
@@ -81,18 +68,15 @@ function showView(view) {
 function setWalletUI() {
   const connectBtn = document.getElementById("connectBtn");
   const connectBtnText = document.getElementById("connectBtnText");
-  const navWrap = document.getElementById("navWrap");
 
-  if (!connectBtn || !connectBtnText || !navWrap) return;
+  if (!connectBtn || !connectBtnText) return;
 
   if (state.connected && state.publicKey) {
     connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
     connectBtn.classList.add("is-connected");
-    navWrap.classList.add("is-hidden"); // hide tabs once connected (as requested)
   } else {
     connectBtnText.textContent = "Connect Wallet";
     connectBtn.classList.remove("is-connected");
-    navWrap.classList.remove("is-hidden");
   }
 }
 
@@ -131,13 +115,12 @@ function renderPartnersTable() {
   if (!tbody) return;
 
   const rows = PARTNERS.map((p) => {
-    const displayName = state.connected ? p.name : maskName(p.name);
+    const displayName = state.connected ? p.name : maskAll(p.name);
     const displayUrl = state.connected ? p.url : maskUrl(p.url);
 
     return `
       <tr>
         <td class="td-strong">${displayName}</td>
-        <td>${p.category}</td>
         <td><span class="deal">50%</span></td>
         <td class="mono">${displayUrl}</td>
       </tr>
@@ -175,14 +158,13 @@ function renderLinksPage() {
         <thead>
           <tr>
             <th>Partner</th>
-            <th>Category</th>
             <th>Your Link</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           <tr class="empty-row">
-            <td colspan="4">
+            <td colspan="3">
               <div class="empty-state">
                 <div class="empty-title">No links yet</div>
                 <div class="empty-text">Select a partner to generate your affiliate link.</div>
@@ -200,8 +182,7 @@ function renderAnalyticsPage() {
   const perf = document.getElementById("partnersPerfTbody");
   if (!timeline || !perf) return;
 
-  // IMPORTANT: do NOT blur/overlay analytics page when disconnected
-  // Show locked copy inside tables, banner handles the connect prompt.
+  // No page blur/overlay. Banner is the connect prompt.
   if (!state.connected) {
     timeline.innerHTML = `
       <tr class="empty-row">
@@ -226,7 +207,6 @@ function renderAnalyticsPage() {
     return;
   }
 
-  // Connected but no data yet
   timeline.innerHTML = `
     <tr class="empty-row">
       <td colspan="4">
@@ -325,7 +305,6 @@ function syncIfAlreadyConnected() {
 function attachEvents() {
   document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
   document.getElementById("connectStartBtn")?.addEventListener("click", connectWallet);
-  document.getElementById("connectRevealBtn")?.addEventListener("click", connectWallet);
   document.getElementById("bannerConnectBtn")?.addEventListener("click", connectWallet);
 
   document.querySelectorAll(".nav-link").forEach((btn) => {
