@@ -19,13 +19,13 @@
       <div class="header-inner">
         <h1 class="brand-title">LinkCryptVault</h1>
 
-        <button id="connectBtn" class="btn btn-primary" type="button" aria-label="Connect Wallet">
+        <button id="connectBtn" class="btn btn-primary btn-header" type="button" aria-label="Connect Wallet">
           <span class="btn-dot" aria-hidden="true"></span>
           <span id="connectBtnText">Connect Wallet</span>
         </button>
       </div>
 
-      <div class="nav-wrap">
+      <div class="nav-wrap" id="navWrap">
         <nav class="nav nav-centered" aria-label="Primary">
           <button class="nav-link is-active" data-view="home" type="button">Home</button>
           <button class="nav-link" data-view="links" type="button">My Links</button>
@@ -37,11 +37,11 @@
     </header>
 
     <main class="container">
-      <!-- Banner popup (shown on gated pages when not connected) -->
+      <!-- Banner popup (ONLY shown on My Links / Analytics when not connected) -->
       <div id="connectBanner" class="banner" role="status" aria-live="polite" hidden>
         <div class="banner-inner">
-          <div class="banner-title">Connect your wallet to view this page.</div>
-          <div class="banner-sub">Wallet connection unlocks your affiliate dashboard and analytics.</div>
+          <div class="banner-title" id="bannerTitle">Connect your wallet to view your data.</div>
+          <div class="banner-sub" id="bannerSub">Wallet connection unlocks your dashboard.</div>
         </div>
         <button id="bannerConnectBtn" class="btn btn-ghost" type="button">
           Connect Wallet
@@ -63,8 +63,7 @@
           </h2>
 
           <p class="hero-subtitle">
-            Connect your Phantom wallet to reveal partner links and unlock your dashboard.
-            Once connected, you can manage your affiliate links and view analytics in one clean workspace.
+            Connect your Phantom wallet to reveal partner websites and their URLs. Once connected, your dashboard pages unlock.
           </p>
 
           <div class="hero-actions-centered">
@@ -76,23 +75,11 @@
         </div>
 
         <div class="section-centered">
-          <div class="section-head">
-            <div class="section-kicker">Partner Links</div>
-            <div class="section-title">Curated crypto offers</div>
-            <div class="section-sub">
-              Connect to reveal full URLs and unlock link tools.
-            </div>
-          </div>
-
           <div class="table-card">
             <div class="table-top">
               <div class="table-top-left">
                 <div class="table-top-title">Available Partners</div>
                 <div class="table-top-sub">Scroll to view all offers</div>
-              </div>
-              <div class="table-top-right">
-                <span class="chip">Affiliate</span>
-                <span class="chip chip-2">Crypto</span>
               </div>
             </div>
 
@@ -102,7 +89,7 @@
                   <tr>
                     <th>Website</th>
                     <th>Category</th>
-                    <th>Deal</th>
+                    <th>Rev Share</th>
                     <th>URL</th>
                   </tr>
                 </thead>
@@ -114,11 +101,9 @@
 
             <div id="revealOverlay" class="reveal-overlay" role="group" aria-label="Connect to reveal links">
               <div class="reveal-box">
-                <div class="reveal-title">
-                  Reveal partner URLs by connecting your wallet
-                </div>
+                <div class="reveal-title">Reveal partner details</div>
                 <div class="reveal-sub">
-                  Wallet connection enables access to partner links and dashboard features.
+                  Connect your wallet to reveal full website names and URLs.
                 </div>
                 <button id="connectRevealBtn" class="btn btn-primary btn-wide" type="button">
                   <span class="btn-dot" aria-hidden="true"></span>
@@ -129,7 +114,7 @@
           </div>
 
           <div class="micro-note">
-            When connected, full URLs appear instantly and dashboard pages unlock.
+            When connected, website names + full URLs appear instantly.
           </div>
         </div>
       </section>
@@ -155,7 +140,7 @@
         <div class="page-head">
           <h2 class="page-title">Analytics</h2>
           <p class="page-subtitle">
-            Track performance with clean visuals and structured tables.
+            Performance overview with clean visuals and structured tables.
           </p>
         </div>
 
@@ -165,7 +150,7 @@
               <div class="stat-label">Total Earnings</div>
               <div class="stat-pill">24h payout</div>
             </div>
-            <div class="stat-value" id="statEarnings">$0.00</div>
+            <div class="stat-value" id="statEarnings">—</div>
             <div class="chart card-chart" aria-hidden="true">
               <div class="chart-line"></div>
             </div>
@@ -177,7 +162,7 @@
               <div class="stat-label">Clicks</div>
               <div class="stat-pill stat-pill-2">live</div>
             </div>
-            <div class="stat-value" id="statClicks">0</div>
+            <div class="stat-value" id="statClicks">—</div>
             <div class="chart card-chart" aria-hidden="true">
               <div class="chart-bars"></div>
             </div>
@@ -189,7 +174,7 @@
               <div class="stat-label">Conversion Rate</div>
               <div class="stat-pill">partner-based</div>
             </div>
-            <div class="stat-value" id="statCvr">0.0%</div>
+            <div class="stat-value" id="statCvr">—</div>
             <div class="chart card-chart" aria-hidden="true">
               <div class="chart-wave"></div>
             </div>
@@ -199,9 +184,9 @@
 
         <div class="panel panel-spaced">
           <div class="panel-inner">
-            <div class="panel-title">Earnings timeline</div>
-            <div class="panel-sub">
-              A clean breakdown of earnings and payouts over time.
+            <div class="panel-head">
+              <div class="panel-kicker">Earnings timeline</div>
+              <div class="panel-desc">Breakdown of earnings and payout status over time.</div>
             </div>
 
             <div class="big-chart" aria-hidden="true">
@@ -229,9 +214,9 @@
 
         <div class="panel panel-spaced">
           <div class="panel-inner">
-            <div class="panel-title">Partner performance</div>
-            <div class="panel-sub">
-              Clicks and metrics per partner.
+            <div class="panel-head">
+              <div class="panel-kicker">Partner performance</div>
+              <div class="panel-desc">Clicks, CTR, and revenue by partner.</div>
             </div>
 
             <div class="table-wrap">
@@ -251,9 +236,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Locked blur overlay for analytics when not connected (no buttons inside tables) -->
-        <div id="analyticsLock" class="page-lock" hidden aria-hidden="true"></div>
       </section>
 
       <!-- HOW IT WORKS -->
@@ -261,7 +243,7 @@
         <div class="page-head">
           <h2 class="page-title">How it works</h2>
           <p class="page-subtitle">
-            Straightforward affiliate flow, clear terms, fast crypto payouts.
+            Clear affiliate flow, enforced split, fast crypto payouts.
           </p>
         </div>
 
@@ -290,7 +272,7 @@
               <div class="how-step-body">
                 <div class="how-step-title">Connect wallet</div>
                 <div class="how-step-text">
-                  Connect Phantom to unlock partner links and your dashboard pages.
+                  Connect Phantom to unlock partner visibility and dashboard features.
                 </div>
               </div>
             </div>
