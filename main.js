@@ -6,20 +6,20 @@ const state = {
   view: "home",
 };
 
-// Partner table data (example)
+// Partner table data (example placeholders)
 const PARTNERS = [
-  { name: "NovaSwap", category: "DEX", deal: "RevShare", url: "https://novaswap.exchange/affiliates" },
-  { name: "ArcadePerps", category: "Perps", deal: "Up to 35%", url: "https://arcadeperps.io/partners/apply" },
-  { name: "StableBridge", category: "On/Off-ramp", deal: "CPA", url: "https://stablebridge.com/affiliate-program" },
-  { name: "FrostWallet", category: "Wallet", deal: "RevShare", url: "https://frostwallet.app/affiliates" },
-  { name: "KiteLaunch", category: "Launchpad", deal: "CPA", url: "https://kitelaunch.xyz/affiliate" },
-  { name: "PulseStake", category: "Staking", deal: "Up to 18%", url: "https://pulsestake.finance/partners" },
-  { name: "OrbitLend", category: "Lending", deal: "RevShare", url: "https://orbitlend.io/affiliate" },
-  { name: "DeltaOTC", category: "OTC", deal: "Tiered", url: "https://deltaotc.market/affiliates" },
-  { name: "MirageNFT", category: "NFT", deal: "RevShare", url: "https://miragenft.art/affiliate-program" },
-  { name: "ApexSignals", category: "Signals", deal: "CPA", url: "https://apexsignals.trade/partners" },
-  { name: "ZenBridge", category: "Bridge", deal: "RevShare", url: "https://zenbridge.network/affiliate" },
-  { name: "VoltFutures", category: "Futures", deal: "Up to 30%", url: "https://voltfutures.exchange/affiliate" },
+  { name: "NovaSwap", category: "DEX", url: "https://novaswap.exchange/affiliates" },
+  { name: "ArcadePerps", category: "Perps", url: "https://arcadeperps.io/partners/apply" },
+  { name: "StableBridge", category: "On/Off-ramp", url: "https://stablebridge.com/affiliate-program" },
+  { name: "FrostWallet", category: "Wallet", url: "https://frostwallet.app/affiliates" },
+  { name: "KiteLaunch", category: "Launchpad", url: "https://kitelaunch.xyz/affiliate" },
+  { name: "PulseStake", category: "Staking", url: "https://pulsestake.finance/partners" },
+  { name: "OrbitLend", category: "Lending", url: "https://orbitlend.io/affiliate" },
+  { name: "DeltaOTC", category: "OTC", url: "https://deltaotc.market/affiliates" },
+  { name: "MirageNFT", category: "NFT", url: "https://miragenft.art/affiliate-program" },
+  { name: "ApexSignals", category: "Signals", url: "https://apexsignals.trade/partners" },
+  { name: "ZenBridge", category: "Bridge", url: "https://zenbridge.network/affiliate" },
+  { name: "VoltFutures", category: "Futures", url: "https://voltfutures.exchange/affiliate" },
 ];
 
 function getPhantom() {
@@ -33,6 +33,15 @@ function shortAddress(addr) {
   return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
+function maskName(name) {
+  if (!name) return "—";
+  if (name.length <= 3) return "★".repeat(name.length);
+  const head = name.slice(0, 1);
+  const tail = name.slice(-1);
+  const stars = "★".repeat(Math.max(4, name.length - 2));
+  return `${head}${stars}${tail}`;
+}
+
 function maskUrl(url) {
   // Keep protocol + first 2 + last 3 visible, star out the rest
   if (!url) return "—";
@@ -40,11 +49,11 @@ function maskUrl(url) {
   const proto = protoMatch ? protoMatch[1] : "";
   const rest = proto ? url.slice(proto.length) : url;
 
-  if (rest.length <= 8) return proto + "****";
+  if (rest.length <= 8) return proto + "★★★★";
 
   const head = rest.slice(0, 2);
   const tail = rest.slice(-3);
-  const stars = "★".repeat(Math.max(6, rest.length - (head.length + tail.length)));
+  const stars = "★".repeat(Math.max(10, rest.length - (head.length + tail.length)));
   return proto + head + stars + tail;
 }
 
@@ -70,24 +79,51 @@ function showView(view) {
 }
 
 function setWalletUI() {
+  const connectBtn = document.getElementById("connectBtn");
   const connectBtnText = document.getElementById("connectBtnText");
-  if (!connectBtnText) return;
+  const navWrap = document.getElementById("navWrap");
+
+  if (!connectBtn || !connectBtnText || !navWrap) return;
 
   if (state.connected && state.publicKey) {
     connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
+    connectBtn.classList.add("is-connected");
+    navWrap.classList.add("is-hidden"); // hide tabs once connected (as requested)
   } else {
     connectBtnText.textContent = "Connect Wallet";
+    connectBtn.classList.remove("is-connected");
+    navWrap.classList.remove("is-hidden");
   }
 }
 
 function updateBanner() {
   const banner = document.getElementById("connectBanner");
-  if (!banner) return;
+  const title = document.getElementById("bannerTitle");
+  const sub = document.getElementById("bannerSub");
+  if (!banner || !title || !sub) return;
 
-  const gatedViews = new Set(["links", "analytics"]);
-  const shouldShow = gatedViews.has(state.view) && !state.connected;
+  // Banner ONLY on My Links + Analytics when not connected
+  if (state.connected) {
+    banner.hidden = true;
+    return;
+  }
 
-  banner.hidden = !shouldShow;
+  if (state.view === "links") {
+    title.textContent = "Connect your wallet to see your links.";
+    sub.textContent = "Your generated affiliate links will appear here once connected.";
+    banner.hidden = false;
+    return;
+  }
+
+  if (state.view === "analytics") {
+    title.textContent = "Connect your wallet to view your data.";
+    sub.textContent = "Analytics and performance metrics appear after you connect.";
+    banner.hidden = false;
+    return;
+  }
+
+  // Home + How it works => no banner
+  banner.hidden = true;
 }
 
 function renderPartnersTable() {
@@ -95,12 +131,14 @@ function renderPartnersTable() {
   if (!tbody) return;
 
   const rows = PARTNERS.map((p) => {
+    const displayName = state.connected ? p.name : maskName(p.name);
     const displayUrl = state.connected ? p.url : maskUrl(p.url);
+
     return `
       <tr>
-        <td class="td-strong">${p.name}</td>
+        <td class="td-strong">${displayName}</td>
         <td>${p.category}</td>
-        <td><span class="deal">${p.deal}</span></td>
+        <td><span class="deal">50%</span></td>
         <td class="mono">${displayUrl}</td>
       </tr>
     `;
@@ -119,16 +157,19 @@ function renderLinksPage() {
   if (!state.connected) {
     target.innerHTML = `
       <div class="locked-copy">
-        <div class="locked-title">Connect wallet to view your links</div>
-        <div class="locked-sub">Your affiliate links will appear here once connected.</div>
+        <div class="locked-title">Your links are locked</div>
+        <div class="locked-sub">Connect your wallet to view and manage your affiliate links.</div>
       </div>
     `;
     return;
   }
 
   target.innerHTML = `
-    <div class="panel-title">Your chosen affiliate links</div>
-    <div class="panel-sub">No links selected yet. Once you choose partners, they’ll appear here.</div>
+    <div class="panel-head">
+      <div class="panel-kicker">Your chosen links</div>
+      <div class="panel-desc">Links appear here after you select partner offers.</div>
+    </div>
+
     <div class="table-wrap">
       <table class="table" aria-label="My Links">
         <thead>
@@ -155,22 +196,19 @@ function renderLinksPage() {
 }
 
 function renderAnalyticsPage() {
-  const lock = document.getElementById("analyticsLock");
-  if (lock) lock.hidden = state.connected;
-
-  // Fill tables with placeholder/empty states depending on connected
   const timeline = document.getElementById("timelineTbody");
   const perf = document.getElementById("partnersPerfTbody");
-
   if (!timeline || !perf) return;
 
+  // IMPORTANT: do NOT blur/overlay analytics page when disconnected
+  // Show locked copy inside tables, banner handles the connect prompt.
   if (!state.connected) {
     timeline.innerHTML = `
       <tr class="empty-row">
         <td colspan="4">
           <div class="empty-state">
-            <div class="empty-title">Locked</div>
-            <div class="empty-text">Connect your wallet to view analytics.</div>
+            <div class="empty-title">No data</div>
+            <div class="empty-text">Connect your wallet to view analytics data.</div>
           </div>
         </td>
       </tr>
@@ -179,7 +217,7 @@ function renderAnalyticsPage() {
       <tr class="empty-row">
         <td colspan="4">
           <div class="empty-state">
-            <div class="empty-title">Locked</div>
+            <div class="empty-title">No data</div>
             <div class="empty-text">Connect your wallet to view partner performance.</div>
           </div>
         </td>
@@ -188,7 +226,7 @@ function renderAnalyticsPage() {
     return;
   }
 
-  // Connected but no data yet (empty states)
+  // Connected but no data yet
   timeline.innerHTML = `
     <tr class="empty-row">
       <td colspan="4">
@@ -213,11 +251,9 @@ function renderAnalyticsPage() {
 }
 
 function renderStats() {
-  // keep placeholders minimal; no fake numbers unless connected + data exists
   const e = document.getElementById("statEarnings");
   const c = document.getElementById("statClicks");
   const r = document.getElementById("statCvr");
-
   if (!e || !c || !r) return;
 
   if (!state.connected) {
@@ -227,7 +263,6 @@ function renderStats() {
     return;
   }
 
-  // Connected but no data
   e.textContent = "$0.00";
   c.textContent = "0";
   r.textContent = "0.0%";
@@ -303,6 +338,7 @@ function init() {
   syncIfAlreadyConnected();
   setWalletUI();
   showView("home");
+  updateBanner();
   renderAll();
 }
 
