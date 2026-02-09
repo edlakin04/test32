@@ -15,33 +15,39 @@
       <div class="orb orb-c"></div>
     </div>
 
-    <!-- Main header: title far-left, connect button far-right -->
+    <!-- Main header: title far-left, connect/disconnect far-right -->
     <header class="header">
       <div class="header-inner header-inner-wide">
         <h1 class="brand-title">LinkCryptVault</h1>
 
-        <button id="connectBtn" class="btn btn-primary btn-header" type="button" aria-label="Connect Wallet">
-          <span class="btn-dot" aria-hidden="true"></span>
-          <span id="connectBtnText">Connect Wallet</span>
-        </button>
-      </div>
+        <div class="header-actions">
+          <button id="disconnectBtn" class="btn btn-ghost btn-header" type="button" hidden>
+            Disconnect
+          </button>
 
-      <!-- Sub header: nav centered, faint divider below -->
-      <div class="subheader">
-        <div class="subheader-inner">
-          <nav class="nav nav-centered" aria-label="Primary">
-            <button class="nav-link is-active" data-view="home" type="button">Home</button>
-            <button class="nav-link" data-view="links" type="button">My Links</button>
-            <button class="nav-link" data-view="analytics" type="button">Analytics</button>
-            <button class="nav-link" data-view="how" type="button">How it works</button>
-          </nav>
+          <button id="connectBtn" class="btn btn-primary btn-header" type="button" aria-label="Connect Wallet">
+            <span class="btn-dot" aria-hidden="true"></span>
+            <span id="connectBtnText">Connect Wallet</span>
+          </button>
         </div>
-        <div class="nav-divider" aria-hidden="true"></div>
       </div>
     </header>
 
+    <!-- Tabs BELOW main header, on background -->
+    <div class="tabs-bar">
+      <div class="tabs-inner">
+        <nav class="nav nav-centered" aria-label="Primary">
+          <button class="nav-link is-active" data-view="home" type="button">Home</button>
+          <button class="nav-link" data-view="links" type="button">My Links</button>
+          <button class="nav-link" data-view="analytics" type="button">Analytics</button>
+          <button class="nav-link" data-view="how" type="button">How it works</button>
+        </nav>
+      </div>
+      <div class="nav-divider" aria-hidden="true"></div>
+    </div>
+
     <main class="container">
-      <!-- Banner popup (ONLY shown on My Links / Analytics when not connected) -->
+      <!-- Banner popup (ONLY shown on My Links / Analytics when NOT connected) -->
       <div id="connectBanner" class="banner" role="status" aria-live="polite" hidden>
         <div class="banner-inner">
           <div class="banner-title" id="bannerTitle">Connect your wallet to view your data.</div>
@@ -56,8 +62,6 @@
       <!-- HOME -->
       <section id="view-home" class="view is-visible" aria-label="Home">
         <div class="hero-centered">
-          <!-- removed pill entirely (no replacement) -->
-
           <h2 class="hero-title">
             Promote <span class="accent">crypto platforms</span>, generate affiliate links,
             and get paid in <span class="accent2">crypto</span>.
@@ -67,8 +71,8 @@
             Connect your Phantom wallet to reveal partner websites and their URLs. Once connected, your dashboard pages unlock.
           </p>
 
-          <!-- Keep ONLY this connect button (bottom of intro) -->
-          <div class="hero-actions-centered">
+          <!-- Intro button should disappear after connecting -->
+          <div class="hero-actions-centered" id="homeConnectWrap">
             <button id="connectStartBtn" class="btn btn-glow" type="button">
               <span class="btn-shine" aria-hidden="true"></span>
               Connect Wallet to Reveal Links
@@ -94,18 +98,16 @@
                     <th>URL</th>
                   </tr>
                 </thead>
-                <tbody id="partnersTbody">
-                  <!-- Filled by JS -->
-                </tbody>
+                <tbody id="partnersTbody"></tbody>
               </table>
             </div>
 
-            <!-- Overlay has NO connect button now (as requested) -->
+            <!-- Overlay has NO button, and ONLY appears when disconnected -->
             <div id="revealOverlay" class="reveal-overlay" role="group" aria-label="Connect to reveal links">
               <div class="reveal-box">
-                <div class="reveal-title">Links are hidden</div>
+                <div class="reveal-title">Links are partially hidden</div>
                 <div class="reveal-sub">
-                  Use the connect button above to reveal website names and URLs.
+                  Connect your wallet to reveal full website names and full URLs.
                 </div>
               </div>
             </div>
