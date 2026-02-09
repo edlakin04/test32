@@ -15,8 +15,9 @@
       <div class="orb orb-c"></div>
     </div>
 
+    <!-- Main header: title far-left, connect button far-right -->
     <header class="header">
-      <div class="header-inner">
+      <div class="header-inner header-inner-wide">
         <h1 class="brand-title">LinkCryptVault</h1>
 
         <button id="connectBtn" class="btn btn-primary btn-header" type="button" aria-label="Connect Wallet">
@@ -25,13 +26,16 @@
         </button>
       </div>
 
-      <div class="nav-wrap" id="navWrap">
-        <nav class="nav nav-centered" aria-label="Primary">
-          <button class="nav-link is-active" data-view="home" type="button">Home</button>
-          <button class="nav-link" data-view="links" type="button">My Links</button>
-          <button class="nav-link" data-view="analytics" type="button">Analytics</button>
-          <button class="nav-link" data-view="how" type="button">How it works</button>
-        </nav>
+      <!-- Sub header: nav centered, faint divider below -->
+      <div class="subheader">
+        <div class="subheader-inner">
+          <nav class="nav nav-centered" aria-label="Primary">
+            <button class="nav-link is-active" data-view="home" type="button">Home</button>
+            <button class="nav-link" data-view="links" type="button">My Links</button>
+            <button class="nav-link" data-view="analytics" type="button">Analytics</button>
+            <button class="nav-link" data-view="how" type="button">How it works</button>
+          </nav>
+        </div>
         <div class="nav-divider" aria-hidden="true"></div>
       </div>
     </header>
@@ -52,10 +56,7 @@
       <!-- HOME -->
       <section id="view-home" class="view is-visible" aria-label="Home">
         <div class="hero-centered">
-          <div class="pill">
-            <span class="pill-glow" aria-hidden="true"></span>
-            <span>Affiliate platform for crypto partner sites</span>
-          </div>
+          <!-- removed pill entirely (no replacement) -->
 
           <h2 class="hero-title">
             Promote <span class="accent">crypto platforms</span>, generate affiliate links,
@@ -66,6 +67,7 @@
             Connect your Phantom wallet to reveal partner websites and their URLs. Once connected, your dashboard pages unlock.
           </p>
 
+          <!-- Keep ONLY this connect button (bottom of intro) -->
           <div class="hero-actions-centered">
             <button id="connectStartBtn" class="btn btn-glow" type="button">
               <span class="btn-shine" aria-hidden="true"></span>
@@ -88,7 +90,6 @@
                 <thead>
                   <tr>
                     <th>Website</th>
-                    <th>Category</th>
                     <th>Rev Share</th>
                     <th>URL</th>
                   </tr>
@@ -99,16 +100,13 @@
               </table>
             </div>
 
+            <!-- Overlay has NO connect button now (as requested) -->
             <div id="revealOverlay" class="reveal-overlay" role="group" aria-label="Connect to reveal links">
               <div class="reveal-box">
-                <div class="reveal-title">Reveal partner details</div>
+                <div class="reveal-title">Links are hidden</div>
                 <div class="reveal-sub">
-                  Connect your wallet to reveal full website names and URLs.
+                  Use the connect button above to reveal website names and URLs.
                 </div>
-                <button id="connectRevealBtn" class="btn btn-primary btn-wide" type="button">
-                  <span class="btn-dot" aria-hidden="true"></span>
-                  Connect Wallet
-                </button>
               </div>
             </div>
           </div>
@@ -204,9 +202,7 @@
                     <th>Notes</th>
                   </tr>
                 </thead>
-                <tbody id="timelineTbody">
-                  <!-- Filled by JS -->
-                </tbody>
+                <tbody id="timelineTbody"></tbody>
               </table>
             </div>
           </div>
@@ -229,9 +225,7 @@
                     <th>Revenue</th>
                   </tr>
                 </thead>
-                <tbody id="partnersPerfTbody">
-                  <!-- Filled by JS -->
-                </tbody>
+                <tbody id="partnersPerfTbody"></tbody>
               </table>
             </div>
           </div>
