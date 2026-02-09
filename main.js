@@ -6,7 +6,6 @@ const state = {
   view: "home",
 };
 
-// Partner table data (example placeholders)
 const PARTNERS = [
   { name: "NovaSwap", url: "https://novaswap.exchange/affiliates" },
   { name: "ArcadePerps", url: "https://arcadeperps.io/partners/apply" },
@@ -33,15 +32,36 @@ function shortAddress(addr) {
   return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
-function maskAll(text) {
-  if (!text) return "—";
-  // fully star out (keep length feel)
-  return "★".repeat(Math.max(10, text.length));
+/**
+ * Mask middle letters of a name: show first + last, star the middle.
+ * Example: NovaSwap -> N★★★★★p
+ */
+function maskNamePartial(name) {
+  if (!name) return "—";
+  if (name.length <= 2) return "★".repeat(name.length);
+  const first = name.slice(0, 1);
+  const last = name.slice(-1);
+  const mid = "★".repeat(Math.max(3, name.length - 2));
+  return `${first}${mid}${last}`;
 }
 
-function maskUrl(url) {
-  // fully star out url length feel (no hints)
-  return maskAll(url);
+/**
+ * Mask URL partially: keep protocol + maybe first domain char + TLD/end.
+ * Example: https://novaswap.exchange/affiliates
+ * -> https://n★★★★★★★★★★★★★★★★★★★es
+ */
+function maskUrlPartial(url) {
+  if (!url) return "—";
+  const protoMatch = url.match(/^(https?:\/\/)/i);
+  const proto = protoMatch ? protoMatch[1] : "";
+  const rest = proto ? url.slice(proto.length) : url;
+
+  // keep first 1 char of rest and last 2 chars
+  if (rest.length <= 6) return proto + "★".repeat(Math.max(4, rest.length));
+  const head = rest.slice(0, 1);
+  const tail = rest.slice(-2);
+  const stars = "★".repeat(Math.max(10, rest.length - 3));
+  return proto + head + stars + tail;
 }
 
 function setActiveNav(view) {
@@ -65,18 +85,20 @@ function showView(view) {
   renderAll();
 }
 
-function setWalletUI() {
+function setHeaderButtons() {
   const connectBtn = document.getElementById("connectBtn");
   const connectBtnText = document.getElementById("connectBtnText");
-
-  if (!connectBtn || !connectBtnText) return;
+  const disconnectBtn = document.getElementById("disconnectBtn");
+  if (!connectBtn || !connectBtnText || !disconnectBtn) return;
 
   if (state.connected && state.publicKey) {
     connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
     connectBtn.classList.add("is-connected");
+    disconnectBtn.hidden = false;
   } else {
     connectBtnText.textContent = "Connect Wallet";
     connectBtn.classList.remove("is-connected");
+    disconnectBtn.hidden = true;
   }
 }
 
@@ -86,12 +108,19 @@ function updateBanner() {
   const sub = document.getElementById("bannerSub");
   if (!banner || !title || !sub) return;
 
-  // Banner ONLY on My Links + Analytics when not connected
+  // Must disappear when connected
   if (state.connected) {
     banner.hidden = true;
     return;
   }
 
+  // Must NOT show on Home or How it works
+  if (state.view === "home" || state.view === "how") {
+    banner.hidden = true;
+    return;
+  }
+
+  // Only show on Links / Analytics when disconnected
   if (state.view === "links") {
     title.textContent = "Connect your wallet to see your links.";
     sub.textContent = "Your generated affiliate links will appear here once connected.";
@@ -106,8 +135,15 @@ function updateBanner() {
     return;
   }
 
-  // Home + How it works => no banner
   banner.hidden = true;
+}
+
+function renderHomeConnectButtonVisibility() {
+  const wrap = document.getElementById("homeConnectWrap");
+  if (!wrap) return;
+
+  // When connected, remove intro connect button
+  wrap.style.display = state.connected ? "none" : "flex";
 }
 
 function renderPartnersTable() {
@@ -115,8 +151,8 @@ function renderPartnersTable() {
   if (!tbody) return;
 
   const rows = PARTNERS.map((p) => {
-    const displayName = state.connected ? p.name : maskAll(p.name);
-    const displayUrl = state.connected ? p.url : maskUrl(p.url);
+    const displayName = state.connected ? p.name : maskNamePartial(p.name);
+    const displayUrl = state.connected ? p.url : maskUrlPartial(p.url);
 
     return `
       <tr>
@@ -182,7 +218,7 @@ function renderAnalyticsPage() {
   const perf = document.getElementById("partnersPerfTbody");
   if (!timeline || !perf) return;
 
-  // No page blur/overlay. Banner is the connect prompt.
+  // No blur overlay; show empty/locked copy inside tables when disconnected
   if (!state.connected) {
     timeline.innerHTML = `
       <tr class="empty-row">
@@ -249,7 +285,9 @@ function renderStats() {
 }
 
 function renderAll() {
-  setWalletUI();
+  setHeaderButtons();
+  updateBanner();
+  renderHomeConnectButtonVisibility();
   renderPartnersTable();
   renderLinksPage();
   renderAnalyticsPage();
@@ -270,12 +308,25 @@ async function connectWallet() {
     state.connected = true;
     state.publicKey = pubkey || null;
 
-    setWalletUI();
-    updateBanner();
     renderAll();
   } catch (err) {
     console.error(err);
   }
+}
+
+async function disconnectWallet() {
+  const phantom = getPhantom();
+  try {
+    // Phantom supports disconnect in many environments
+    await phantom?.disconnect?.();
+  } catch (e) {
+    // ignore
+  }
+
+  state.connected = false;
+  state.publicKey = null;
+
+  renderAll();
 }
 
 function syncIfAlreadyConnected() {
@@ -296,8 +347,6 @@ function syncIfAlreadyConnected() {
       state.connected = false;
       state.publicKey = null;
     }
-    setWalletUI();
-    updateBanner();
     renderAll();
   });
 }
@@ -306,6 +355,7 @@ function attachEvents() {
   document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
   document.getElementById("connectStartBtn")?.addEventListener("click", connectWallet);
   document.getElementById("bannerConnectBtn")?.addEventListener("click", connectWallet);
+  document.getElementById("disconnectBtn")?.addEventListener("click", disconnectWallet);
 
   document.querySelectorAll(".nav-link").forEach((btn) => {
     btn.addEventListener("click", () => showView(btn.dataset.view));
@@ -315,9 +365,7 @@ function attachEvents() {
 function init() {
   attachEvents();
   syncIfAlreadyConnected();
-  setWalletUI();
   showView("home");
-  updateBanner();
   renderAll();
 }
 
