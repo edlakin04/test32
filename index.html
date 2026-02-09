@@ -17,22 +17,19 @@
 
     <header class="header">
       <div class="header-inner">
-        <div class="brand">
-          <div class="brand-mark" aria-hidden="true"></div>
-          <h1 class="brand-title">LinkCryptVault</h1>
-        </div>
+        <h1 class="brand-title">LinkCryptVault</h1>
 
-        <button id="connectBtn" class="btn btn-primary" type="button">
+        <button id="connectBtn" class="btn btn-primary" type="button" aria-label="Connect Wallet">
           <span class="btn-dot" aria-hidden="true"></span>
           <span id="connectBtnText">Connect Wallet</span>
         </button>
       </div>
 
       <div class="nav-wrap">
-        <nav class="nav" aria-label="Primary">
+        <nav class="nav nav-centered" aria-label="Primary">
           <button class="nav-link is-active" data-view="home" type="button">Home</button>
           <button class="nav-link" data-view="links" type="button">My Links</button>
-          <button class="nav-link" data-view="earnings" type="button">Earnings</button>
+          <button class="nav-link" data-view="analytics" type="button">Analytics</button>
           <button class="nav-link" data-view="how" type="button">How it works</button>
         </nav>
         <div class="nav-divider" aria-hidden="true"></div>
@@ -40,222 +37,300 @@
     </header>
 
     <main class="container">
+      <!-- Banner popup (shown on gated pages when not connected) -->
+      <div id="connectBanner" class="banner" role="status" aria-live="polite" hidden>
+        <div class="banner-inner">
+          <div class="banner-title">Connect your wallet to view this page.</div>
+          <div class="banner-sub">Wallet connection unlocks your affiliate dashboard and analytics.</div>
+        </div>
+        <button id="bannerConnectBtn" class="btn btn-ghost" type="button">
+          Connect Wallet
+          <span class="btn-arrow" aria-hidden="true">→</span>
+        </button>
+      </div>
+
       <!-- HOME -->
       <section id="view-home" class="view is-visible" aria-label="Home">
-        <div class="hero">
-          <div class="hero-left">
-            <div class="pill">
-              <span class="pill-glow" aria-hidden="true"></span>
-              <span>Affiliate vault for curated crypto platforms</span>
+        <div class="hero-centered">
+          <div class="pill">
+            <span class="pill-glow" aria-hidden="true"></span>
+            <span>Affiliate platform for crypto partner sites</span>
+          </div>
+
+          <h2 class="hero-title">
+            Promote <span class="accent">crypto platforms</span>, generate affiliate links,
+            and get paid in <span class="accent2">crypto</span>.
+          </h2>
+
+          <p class="hero-subtitle">
+            Connect your Phantom wallet to reveal partner links and unlock your dashboard.
+            Once connected, you can manage your affiliate links and view analytics in one clean workspace.
+          </p>
+
+          <div class="hero-actions-centered">
+            <button id="connectStartBtn" class="btn btn-glow" type="button">
+              <span class="btn-shine" aria-hidden="true"></span>
+              Connect Wallet to Reveal Links
+            </button>
+          </div>
+        </div>
+
+        <div class="section-centered">
+          <div class="section-head">
+            <div class="section-kicker">Partner Links</div>
+            <div class="section-title">Curated crypto offers</div>
+            <div class="section-sub">
+              Connect to reveal full URLs and unlock link tools.
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-top">
+              <div class="table-top-left">
+                <div class="table-top-title">Available Partners</div>
+                <div class="table-top-sub">Scroll to view all offers</div>
+              </div>
+              <div class="table-top-right">
+                <span class="chip">Affiliate</span>
+                <span class="chip chip-2">Crypto</span>
+              </div>
             </div>
 
-            <h2 class="hero-title">
-              Generate affiliate links with a
-              <span class="accent">wallet-gated</span>
-              access layer.
-            </h2>
-
-            <p class="hero-subtitle">
-              Connect your Phantom wallet to unlock a clean affiliate dashboard.
-              Access to view partner links is protected by a one-time <span class="accent-soft">$10</span> payment to reduce bots and
-              preserve offer quality.
-            </p>
-
-            <div class="hero-actions">
-              <button id="connectStartBtn" class="btn btn-glass" type="button">
-                <span class="btn-shine" aria-hidden="true"></span>
-                Connect Wallet to Start
-              </button>
-              <div class="status-line">
-                <span class="status-dot" id="statusDot" aria-hidden="true"></span>
-                <span id="statusText">Not connected</span>
-              </div>
+            <div class="table-scroll">
+              <table class="table" aria-label="Affiliate Partners">
+                <thead>
+                  <tr>
+                    <th>Website</th>
+                    <th>Category</th>
+                    <th>Deal</th>
+                    <th>URL</th>
+                  </tr>
+                </thead>
+                <tbody id="partnersTbody">
+                  <!-- Filled by JS -->
+                </tbody>
+              </table>
             </div>
 
-            <div class="info-grid">
-              <div class="info-card">
-                <div class="info-icon" aria-hidden="true">⚡</div>
-                <div>
-                  <div class="info-title">Fast onboarding</div>
-                  <div class="info-text">Connect, browse curated offers, and generate your affiliate link.</div>
+            <div id="revealOverlay" class="reveal-overlay" role="group" aria-label="Connect to reveal links">
+              <div class="reveal-box">
+                <div class="reveal-title">
+                  Reveal partner URLs by connecting your wallet
                 </div>
-              </div>
-              <div class="info-card">
-                <div class="info-icon" aria-hidden="true">🛡️</div>
-                <div>
-                  <div class="info-title">Anti-bot access</div>
-                  <div class="info-text">$10 access gate helps reduce automated scraping and spam.</div>
+                <div class="reveal-sub">
+                  Wallet connection enables access to partner links and dashboard features.
                 </div>
-              </div>
-              <div class="info-card">
-                <div class="info-icon" aria-hidden="true">📈</div>
-                <div>
-                  <div class="info-title">Track performance</div>
-                  <div class="info-text">Clicks, conversions, and earnings views appear once connected.</div>
-                </div>
+                <button id="connectRevealBtn" class="btn btn-primary btn-wide" type="button">
+                  <span class="btn-dot" aria-hidden="true"></span>
+                  Connect Wallet
+                </button>
               </div>
             </div>
           </div>
 
-          <div class="hero-right">
-            <div class="wallet-card">
-              <div class="wallet-card-top">
-                <div class="wallet-badge">
-                  <span class="badge-dot" aria-hidden="true"></span>
-                  <span id="walletBadgeText">Wallet: Disconnected</span>
-                </div>
-                <div class="chip">Phantom</div>
-              </div>
-
-              <div class="wallet-card-body">
-                <div class="wallet-row">
-                  <div class="wallet-label">Address</div>
-                  <div class="wallet-value" id="walletAddress">—</div>
-                </div>
-                <div class="wallet-row">
-                  <div class="wallet-label">Status</div>
-                  <div class="wallet-value" id="walletStatus">Not connected</div>
-                </div>
-
-                <div class="wallet-hint">
-                  Tip: If Phantom isn’t detected, open this site inside your Phantom browser or install the extension.
-                </div>
-              </div>
-            </div>
-
-            <div class="preview-card">
-              <div class="preview-title">Affiliate Links (locked view)</div>
-
-              <div class="table-wrap table-blur">
-                <table class="table" aria-label="Affiliate Links">
-                  <thead>
-                    <tr>
-                      <th>Partner</th>
-                      <th>Category</th>
-                      <th>Payout</th>
-                      <th>Link</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>NovaSwap</td>
-                      <td>DEX</td>
-                      <td>Up to 35%</td>
-                      <td>••••••••••••••</td>
-                    </tr>
-                    <tr>
-                      <td>ArcadePerps</td>
-                      <td>Perps</td>
-                      <td>RevShare</td>
-                      <td>••••••••••••••</td>
-                    </tr>
-                    <tr>
-                      <td>StableBridge</td>
-                      <td>On/Off-ramp</td>
-                      <td>CPA</td>
-                      <td>••••••••••••••</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div class="lock-overlay" role="group" aria-label="Locked content">
-                  <div class="lock-box">
-                    <div class="lock-title">
-                      Connect to reveal and generate your affiliate links
-                    </div>
-                    <button id="connectTableBtn" class="btn btn-primary" type="button">
-                      <span class="btn-dot" aria-hidden="true"></span>
-                      Connect Wallet
-                    </button>
-                    <div class="lock-sub">
-                      After connecting, you’ll see the partner list and the link generator panel.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="muted-note">
-                Access to view partner links is protected by a one-time $10 payment to reduce bot activity.
-              </div>
-            </div>
+          <div class="micro-note">
+            When connected, full URLs appear instantly and dashboard pages unlock.
           </div>
         </div>
       </section>
 
       <!-- MY LINKS -->
       <section id="view-links" class="view" aria-label="My Links">
-        <div class="view-head">
-          <h2 class="view-title">My Links</h2>
-          <p class="view-subtitle">
-            Your chosen affiliate links will appear here after you connect your wallet.
+        <div class="page-head">
+          <h2 class="page-title">My Links</h2>
+          <p class="page-subtitle">
+            Your chosen affiliate links will appear here once you’ve selected partners.
           </p>
         </div>
 
-        <div class="panel" id="linksPanel">
-          <!-- Filled by JS -->
+        <div class="panel">
+          <div class="panel-inner">
+            <div id="linksContent"></div>
+          </div>
         </div>
       </section>
 
-      <!-- EARNINGS -->
-      <section id="view-earnings" class="view" aria-label="Earnings">
-        <div class="view-head">
-          <h2 class="view-title">Earnings</h2>
-          <p class="view-subtitle">
-            Track performance over time: earnings timeline, clicks, and partner stats.
+      <!-- ANALYTICS -->
+      <section id="view-analytics" class="view" aria-label="Analytics">
+        <div class="page-head">
+          <h2 class="page-title">Analytics</h2>
+          <p class="page-subtitle">
+            Track performance with clean visuals and structured tables.
           </p>
         </div>
 
-        <div class="grid-2" id="earningsPanel">
-          <!-- Filled by JS -->
+        <div class="analytics-grid">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Total Earnings</div>
+              <div class="stat-pill">24h payout</div>
+            </div>
+            <div class="stat-value" id="statEarnings">$0.00</div>
+            <div class="chart card-chart" aria-hidden="true">
+              <div class="chart-line"></div>
+            </div>
+            <div class="stat-foot">Updates when affiliate links generate activity.</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Clicks</div>
+              <div class="stat-pill stat-pill-2">live</div>
+            </div>
+            <div class="stat-value" id="statClicks">0</div>
+            <div class="chart card-chart" aria-hidden="true">
+              <div class="chart-bars"></div>
+            </div>
+            <div class="stat-foot">Traffic appears after your links are shared.</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Conversion Rate</div>
+              <div class="stat-pill">partner-based</div>
+            </div>
+            <div class="stat-value" id="statCvr">0.0%</div>
+            <div class="chart card-chart" aria-hidden="true">
+              <div class="chart-wave"></div>
+            </div>
+            <div class="stat-foot">Calculated from partner events.</div>
+          </div>
         </div>
+
+        <div class="panel panel-spaced">
+          <div class="panel-inner">
+            <div class="panel-title">Earnings timeline</div>
+            <div class="panel-sub">
+              A clean breakdown of earnings and payouts over time.
+            </div>
+
+            <div class="big-chart" aria-hidden="true">
+              <div class="big-chart-grid"></div>
+              <div class="big-chart-line"></div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table" aria-label="Earnings Timeline">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th>Earnings</th>
+                    <th>Payout Status</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="timelineTbody">
+                  <!-- Filled by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-spaced">
+          <div class="panel-inner">
+            <div class="panel-title">Partner performance</div>
+            <div class="panel-sub">
+              Clicks and metrics per partner.
+            </div>
+
+            <div class="table-wrap">
+              <table class="table" aria-label="Partner Performance">
+                <thead>
+                  <tr>
+                    <th>Partner</th>
+                    <th>Clicks</th>
+                    <th>CTR</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="partnersPerfTbody">
+                  <!-- Filled by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Locked blur overlay for analytics when not connected (no buttons inside tables) -->
+        <div id="analyticsLock" class="page-lock" hidden aria-hidden="true"></div>
       </section>
 
       <!-- HOW IT WORKS -->
       <section id="view-how" class="view" aria-label="How it works">
-        <div class="view-head">
-          <h2 class="view-title">How it works</h2>
-          <p class="view-subtitle">
-            A clean flow designed for speed, trust, and bot resistance.
+        <div class="page-head">
+          <h2 class="page-title">How it works</h2>
+          <p class="page-subtitle">
+            Straightforward affiliate flow, clear terms, fast crypto payouts.
           </p>
         </div>
 
-        <div class="how-grid">
-          <div class="how-card">
-            <div class="how-num">01</div>
-            <div class="how-title">Connect Phantom</div>
-            <div class="how-text">
-              Connect your wallet to unlock your dashboard and affiliate views. Your address is used as your account identifier.
+        <div class="how-modern">
+          <div class="how-hero">
+            <div class="how-hero-title">
+              You bring the traffic. We provide the websites. We handle payouts.
+            </div>
+            <div class="how-hero-sub">
+              Users choose from partner crypto platforms, promote using their affiliate link,
+              and earn a split on revenue. Payments are processed and sent in crypto within 24 hours.
+            </div>
+
+            <div class="how-highlight">
+              <div class="how-highlight-title">Revenue Split</div>
+              <div class="how-highlight-sub">
+                We take a <span class="accent">50%</span> cut. Your <span class="accent2">50%</span> is guaranteed and enforced
+                regardless of the revenue amount.
+              </div>
             </div>
           </div>
 
-          <div class="how-card">
-            <div class="how-num">02</div>
-            <div class="how-title">Access gate</div>
-            <div class="how-text">
-              A one-time <span class="accent-soft">$10</span> access step is used to reduce bots and automated scraping of partner links.
+          <div class="how-steps">
+            <div class="how-step">
+              <div class="how-step-num">01</div>
+              <div class="how-step-body">
+                <div class="how-step-title">Connect wallet</div>
+                <div class="how-step-text">
+                  Connect Phantom to unlock partner links and your dashboard pages.
+                </div>
+              </div>
+            </div>
+
+            <div class="how-step">
+              <div class="how-step-num">02</div>
+              <div class="how-step-body">
+                <div class="how-step-title">Choose partner websites</div>
+                <div class="how-step-text">
+                  Browse curated crypto platforms and generate your affiliate link for each offer.
+                </div>
+              </div>
+            </div>
+
+            <div class="how-step">
+              <div class="how-step-num">03</div>
+              <div class="how-step-body">
+                <div class="how-step-title">Promote and earn</div>
+                <div class="how-step-text">
+                  Share your link. When users convert, revenue is tracked and split automatically.
+                </div>
+              </div>
+            </div>
+
+            <div class="how-step">
+              <div class="how-step-num">04</div>
+              <div class="how-step-body">
+                <div class="how-step-title">Crypto payout within 24 hours</div>
+                <div class="how-step-text">
+                  We process earnings and send crypto to your connected wallet within 24 hours.
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="how-card">
-            <div class="how-num">03</div>
-            <div class="how-title">Choose a partner</div>
-            <div class="how-text">
-              Browse curated crypto platforms and generate your unique affiliate link. Your links appear under <span class="accent">My Links</span>.
-            </div>
-          </div>
-
-          <div class="how-card">
-            <div class="how-num">04</div>
-            <div class="how-title">Track metrics</div>
-            <div class="how-text">
-              View earnings, clicks, and partner-level performance in <span class="accent">Earnings</span>. Clean tables, clear timeline.
-            </div>
-          </div>
-
-          <div class="how-card wide">
-            <div class="how-title">Note</div>
-            <div class="how-text">
-              This site demonstrates a modern wallet-connected UI. Payment and affiliate generation logic are designed to plug into your backend.
+          <div class="how-footer-card">
+            <div class="how-footer-title">Guaranteed split policy</div>
+            <div class="how-footer-text">
+              The 50% share to affiliates is guaranteed and enforced no matter the revenue.
+              Payout processing is handled by us, and transfers are issued within 24 hours.
             </div>
           </div>
         </div>
@@ -269,7 +344,7 @@
           <span>LinkCryptVault</span>
         </div>
         <div class="footer-right">
-          <span class="footer-muted">Dark UI • Phantom connect • Affiliate dashboard layout</span>
+          <span class="footer-muted">Dark UI • Phantom connect • Affiliate dashboard</span>
         </div>
       </div>
     </footer>
