@@ -32,10 +32,7 @@ function shortAddress(addr) {
   return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
-/**
- * Mask middle letters of a name: show first + last, star the middle.
- * Example: NovaSwap -> N★★★★★p
- */
+/* Mask middle letters: keep first + last visible */
 function maskNamePartial(name) {
   if (!name) return "—";
   if (name.length <= 2) return "★".repeat(name.length);
@@ -45,22 +42,18 @@ function maskNamePartial(name) {
   return `${first}${mid}${last}`;
 }
 
-/**
- * Mask URL partially: keep protocol + maybe first domain char + TLD/end.
- * Example: https://novaswap.exchange/affiliates
- * -> https://n★★★★★★★★★★★★★★★★★★★es
- */
+/* Mask URL: keep protocol + a tiny hint, star main bit, keep tail */
 function maskUrlPartial(url) {
   if (!url) return "—";
   const protoMatch = url.match(/^(https?:\/\/)/i);
   const proto = protoMatch ? protoMatch[1] : "";
   const rest = proto ? url.slice(proto.length) : url;
 
-  // keep first 1 char of rest and last 2 chars
-  if (rest.length <= 6) return proto + "★".repeat(Math.max(4, rest.length));
-  const head = rest.slice(0, 1);
-  const tail = rest.slice(-2);
-  const stars = "★".repeat(Math.max(10, rest.length - 3));
+  // keep first 2 chars of rest + last 4 chars
+  if (rest.length <= 10) return proto + "★".repeat(Math.max(8, rest.length));
+  const head = rest.slice(0, 2);
+  const tail = rest.slice(-4);
+  const stars = "★".repeat(Math.max(10, rest.length - (head.length + tail.length)));
   return proto + head + stars + tail;
 }
 
@@ -81,7 +74,6 @@ function showView(view) {
   if (el) el.classList.add("is-visible");
 
   setActiveNav(view);
-  updateBanner();
   renderAll();
 }
 
@@ -102,47 +94,9 @@ function setHeaderButtons() {
   }
 }
 
-function updateBanner() {
-  const banner = document.getElementById("connectBanner");
-  const title = document.getElementById("bannerTitle");
-  const sub = document.getElementById("bannerSub");
-  if (!banner || !title || !sub) return;
-
-  // Must disappear when connected
-  if (state.connected) {
-    banner.hidden = true;
-    return;
-  }
-
-  // Must NOT show on Home or How it works
-  if (state.view === "home" || state.view === "how") {
-    banner.hidden = true;
-    return;
-  }
-
-  // Only show on Links / Analytics when disconnected
-  if (state.view === "links") {
-    title.textContent = "Connect your wallet to see your links.";
-    sub.textContent = "Your generated affiliate links will appear here once connected.";
-    banner.hidden = false;
-    return;
-  }
-
-  if (state.view === "analytics") {
-    title.textContent = "Connect your wallet to view your data.";
-    sub.textContent = "Analytics and performance metrics appear after you connect.";
-    banner.hidden = false;
-    return;
-  }
-
-  banner.hidden = true;
-}
-
 function renderHomeConnectButtonVisibility() {
   const wrap = document.getElementById("homeConnectWrap");
   if (!wrap) return;
-
-  // When connected, remove intro connect button
   wrap.style.display = state.connected ? "none" : "flex";
 }
 
@@ -176,8 +130,8 @@ function renderLinksPage() {
   if (!state.connected) {
     target.innerHTML = `
       <div class="locked-copy">
-        <div class="locked-title">Your links are locked</div>
-        <div class="locked-sub">Connect your wallet to view and manage your affiliate links.</div>
+        <div class="locked-title">Connect wallet to view links</div>
+        <div class="locked-sub">Your affiliate links appear here once you connect.</div>
       </div>
     `;
     return;
@@ -218,14 +172,13 @@ function renderAnalyticsPage() {
   const perf = document.getElementById("partnersPerfTbody");
   if (!timeline || !perf) return;
 
-  // No blur overlay; show empty/locked copy inside tables when disconnected
   if (!state.connected) {
     timeline.innerHTML = `
       <tr class="empty-row">
         <td colspan="4">
           <div class="empty-state">
-            <div class="empty-title">No data</div>
-            <div class="empty-text">Connect your wallet to view analytics data.</div>
+            <div class="empty-title">Connect wallet to view data</div>
+            <div class="empty-text">Analytics will populate after you connect.</div>
           </div>
         </td>
       </tr>
@@ -234,8 +187,8 @@ function renderAnalyticsPage() {
       <tr class="empty-row">
         <td colspan="4">
           <div class="empty-state">
-            <div class="empty-title">No data</div>
-            <div class="empty-text">Connect your wallet to view partner performance.</div>
+            <div class="empty-title">Connect wallet to view data</div>
+            <div class="empty-text">Partner performance will appear after you connect.</div>
           </div>
         </td>
       </tr>
@@ -286,7 +239,6 @@ function renderStats() {
 
 function renderAll() {
   setHeaderButtons();
-  updateBanner();
   renderHomeConnectButtonVisibility();
   renderPartnersTable();
   renderLinksPage();
@@ -317,9 +269,8 @@ async function connectWallet() {
 async function disconnectWallet() {
   const phantom = getPhantom();
   try {
-    // Phantom supports disconnect in many environments
     await phantom?.disconnect?.();
-  } catch (e) {
+  } catch (_) {
     // ignore
   }
 
@@ -354,7 +305,6 @@ function syncIfAlreadyConnected() {
 function attachEvents() {
   document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
   document.getElementById("connectStartBtn")?.addEventListener("click", connectWallet);
-  document.getElementById("bannerConnectBtn")?.addEventListener("click", connectWallet);
   document.getElementById("disconnectBtn")?.addEventListener("click", disconnectWallet);
 
   document.querySelectorAll(".nav-link").forEach((btn) => {
