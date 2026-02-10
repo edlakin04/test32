@@ -169,6 +169,7 @@ body {
   color: transparent;
 }
 
+/* Home actions layout */
 .hero-actions-centered {
   margin-top: 18px;
   display: flex;
@@ -176,6 +177,13 @@ body {
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* Two buttons (disconnected) */
+.hero-actions-duo { justify-content: center; }
+
+/* Single button (connected) */
+.hero-actions-single { justify-content: center; }
+.hero-actions-single .btn { min-width: 260px; }
 
 /* Pricing tiers on home */
 .tiers {
@@ -714,6 +722,73 @@ body {
   letter-spacing: -0.35px;
 }
 .how-footer-text { color: rgba(255,255,255,0.62); line-height: 1.65; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+}
+.modal.is-open { display: block; }
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.modal-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, calc(100% - 32px));
+  border-radius: 22px;
+  background: rgba(7, 10, 18, 0.78);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 30px 120px rgba(0,0,0,0.75);
+  padding: 16px;
+}
+
+.modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.modal-title {
+  font-weight: 1100;
+  letter-spacing: -0.35px;
+  color: rgba(255,255,255,0.94);
+}
+.modal-x {
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.88);
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+.modal-x:hover { background: rgba(255,255,255,0.09); }
+
+.modal-sub {
+  color: rgba(255,255,255,0.62);
+  line-height: 1.6;
+  font-size: 13.5px;
+  margin-bottom: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 
 /* Footer */
 .footer {
