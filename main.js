@@ -1,11 +1,12 @@
-/* LinkCryptVault - Wallet connect + modern affiliate UI */
+/* LinkCryptVault - UI-perfect connect flow (button-driven) */
 
 const state = {
+  // IMPORTANT: This is UI-driven. We still call wallet.connect(),
+  // but the UI state is controlled by clicks to match the exact prototype behavior.
   connected: false,
   publicKey: null,
   view: "home",
 
-  // Upgrade (UI only)
   upgraded: false,
 };
 
@@ -57,6 +58,7 @@ function maskUrlPartial(url) {
   return proto + head + stars + tail;
 }
 
+/* ---------- NAV ---------- */
 function setActiveNav(view) {
   document.querySelectorAll(".nav-link").forEach((btn) => {
     btn.classList.toggle("is-active", btn.dataset.view === view);
@@ -77,7 +79,7 @@ function showView(view) {
   renderAll();
 }
 
-/* Modal */
+/* ---------- MODAL ---------- */
 function modalEl() {
   return document.getElementById("walletModal");
 }
@@ -94,6 +96,17 @@ function closeModal() {
   m.setAttribute("aria-hidden", "true");
 }
 
+/* ---------- UI RULES (BUTTON-DRIVEN) ---------- */
+/*
+  Rules we enforce exactly:
+
+  - Disconnect button ONLY visible when connected (state.connected = true)
+  - Home CTA:
+      disconnected => show Connect-to-Reveal + $399 button (two buttons)
+      connected    => show ONLY $399 button centered, connect-to-reveal hidden
+  - If $399 pressed while disconnected => modal appears (connect required)
+*/
+
 function setHeaderButtons() {
   const connectBtn = document.getElementById("connectBtn");
   const connectBtnText = document.getElementById("connectBtnText");
@@ -103,13 +116,11 @@ function setHeaderButtons() {
   if (state.connected && state.publicKey) {
     connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
     connectBtn.classList.add("is-connected");
-
-    // Disconnect visible ONLY when connected
-    disconnectBtn.hidden = false;
+    disconnectBtn.hidden = false; // ✅ only when connected
   } else {
     connectBtnText.textContent = "Connect Wallet";
     connectBtn.classList.remove("is-connected");
-    disconnectBtn.hidden = true;
+    disconnectBtn.hidden = true; // ✅ hidden when disconnected
   }
 }
 
@@ -120,17 +131,22 @@ function renderHomeActions() {
   if (!connectStartBtn || !upgradeBtn || !wrap) return;
 
   if (state.connected) {
-    // After wallet connected: Connect CTA disappears, upgrade remains (centered)
+    // ✅ once connected, connect-to-reveal disappears
     connectStartBtn.hidden = true;
+
+    // ✅ only $399 remains
     upgradeBtn.hidden = false;
+
+    // ✅ centered single CTA layout
     wrap.classList.remove("hero-actions-duo");
     wrap.classList.add("hero-actions-single");
     return;
   }
 
-  // Disconnected: both buttons visible side-by-side
+  // disconnected: show both buttons
   connectStartBtn.hidden = false;
   upgradeBtn.hidden = false;
+
   wrap.classList.add("hero-actions-duo");
   wrap.classList.remove("hero-actions-single");
 }
@@ -298,45 +314,67 @@ function renderAll() {
   renderStats();
 }
 
-async function connectWallet() {
+/* ---------- CONNECT/DISCONNECT (BUTTON-DRIVEN UI) ---------- */
+async function doWalletConnect() {
   const wallet = getWalletProvider();
   if (!wallet) {
     alert("Wallet not detected. Please install a compatible wallet or open this site inside a wallet browser.");
-    return false;
+    return null;
   }
+  const resp = await wallet.connect();
+  const pubkey = resp?.publicKey?.toString?.() || wallet?.publicKey?.toString?.();
+  return pubkey || null;
+}
 
+async function connectFlow() {
   try {
-    const resp = await wallet.connect();
-    const pubkey = resp?.publicKey?.toString?.() || wallet?.publicKey?.toString?.();
+    const pubkey = await doWalletConnect();
+    if (!pubkey) return;
 
+    // ✅ UI now treated as connected because user clicked connect and connect succeeded
     state.connected = true;
-    state.publicKey = pubkey || null;
+    state.publicKey = pubkey;
 
-    // Close modal if it was open
+    // ✅ close modal if it was open
     closeModal();
 
     renderAll();
-    return true;
   } catch (err) {
     console.error(err);
-    return false;
   }
 }
 
-async function disconnectWallet() {
+async function disconnectFlow() {
   const wallet = getWalletProvider();
   try {
     await wallet?.disconnect?.();
-  } catch (_) {
-    // ignore
-  }
+  } catch (_) {}
 
+  // ✅ UI now treated as disconnected
   state.connected = false;
   state.publicKey = null;
 
   renderAll();
 }
 
+/* ---------- UPGRADE CTA ---------- */
+function handleUpgradeClick() {
+  // ✅ if not connected, show modal (connect required)
+  if (!state.connected) {
+    openModal();
+    return;
+  }
+
+  // UI-only upgrade (hide button after click)
+  state.upgraded = true;
+
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  if (upgradeBtn) upgradeBtn.hidden = true;
+
+  renderAll();
+}
+
+/* ---------- GENERATE LINK ---------- */
 function buildAffiliateLink(partner) {
   const base = partner.url;
   const ref = state.publicKey ? state.publicKey.slice(0, 8) : "anonymous";
@@ -359,36 +397,17 @@ async function handleGenerate(partnerId) {
   }
 }
 
-function handleUpgradeClick() {
-  // If not connected, show modal prompting connection
-  if (!state.connected) {
-    openModal();
-    return;
-  }
-
-  // UI-only “purchase”: mark upgraded and remove the upgrade button
-  state.upgraded = true;
-
-  const upgradeBtn = document.getElementById("upgradeBtn");
-  if (upgradeBtn) upgradeBtn.hidden = true;
-
-  renderAll();
-}
-
 function attachEvents() {
-  document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
-  document.getElementById("disconnectBtn")?.addEventListener("click", disconnectWallet);
+  // Header buttons
+  document.getElementById("connectBtn")?.addEventListener("click", connectFlow);
+  document.getElementById("disconnectBtn")?.addEventListener("click", disconnectFlow);
 
   // Home CTAs
-  document.getElementById("connectStartBtn")?.addEventListener("click", async () => {
-    // Connect, then the connect CTA will disappear because connected=true
-    await connectWallet();
-  });
-
+  document.getElementById("connectStartBtn")?.addEventListener("click", connectFlow);
   document.getElementById("upgradeBtn")?.addEventListener("click", handleUpgradeClick);
 
   // Modal connect + close
-  document.getElementById("modalConnectBtn")?.addEventListener("click", connectWallet);
+  document.getElementById("modalConnectBtn")?.addEventListener("click", connectFlow);
 
   document.addEventListener("click", (e) => {
     const t = e.target;
@@ -423,32 +442,14 @@ function attachEvents() {
   });
 }
 
-function syncIfAlreadyConnected() {
-  const wallet = getWalletProvider();
-  if (!wallet) return;
-
-  const pubkey = wallet?.publicKey?.toString?.();
-  if (pubkey) {
-    state.connected = true;
-    state.publicKey = pubkey;
-  }
-
-  wallet.on?.("accountChanged", (publicKey) => {
-    if (publicKey) {
-      state.connected = true;
-      state.publicKey = publicKey.toString();
-    } else {
-      state.connected = false;
-      state.publicKey = null;
-    }
-    renderAll();
-  });
-}
-
 function init() {
   attachEvents();
-  syncIfAlreadyConnected();
   showView("home");
+
+  // Start fully disconnected for perfect presentation
+  state.connected = false;
+  state.publicKey = null;
+
   renderAll();
 }
 
