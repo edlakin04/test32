@@ -56,15 +56,42 @@
           </h2>
 
           <p class="hero-subtitle">
-            Connect your Phantom wallet to reveal partner websites and their URLs. Once connected, your dashboard pages unlock.
+            Partner links stay <span class="accent">hidden</span> until a wallet connects — this helps reduce spam bots and
+            unwanted audiences. Payouts and splits are enforced using <span class="accent2">smart contracts</span>.
           </p>
 
-          <!-- Intro button should disappear after connecting -->
-          <div class="hero-actions-centered" id="homeConnectWrap">
+          <div class="hero-actions-centered" id="homeActionsWrap">
+            <!-- Shown only until pressed (then replaced by upgrade button) -->
             <button id="connectStartBtn" class="btn btn-glow" type="button">
               <span class="btn-shine" aria-hidden="true"></span>
               Connect Wallet to Reveal Links
             </button>
+
+            <!-- Appears after Connect button is pressed; clicking hides it too -->
+            <button id="upgradeBtn" class="btn btn-upgrade" type="button" hidden>
+              $399 for 95% commission
+              <span class="btn-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+
+          <div class="tiers">
+            <div class="tier-card">
+              <div class="tier-top">
+                <div class="tier-title">Standard</div>
+                <div class="tier-badge">Default</div>
+              </div>
+              <div class="tier-value">50% revenue share</div>
+              <div class="tier-sub">Instant access after wallet connect.</div>
+            </div>
+
+            <div class="tier-card tier-card-premium">
+              <div class="tier-top">
+                <div class="tier-title">Premium</div>
+                <div class="tier-badge tier-badge-premium">One-time</div>
+              </div>
+              <div class="tier-value"><span class="accent2">95%</span> revenue share</div>
+              <div class="tier-sub">$399 one-time payment unlocks 95% across all partners.</div>
+            </div>
           </div>
         </div>
 
@@ -84,6 +111,7 @@
                     <th>Website</th>
                     <th>Rev Share</th>
                     <th>URL</th>
+                    <th style="text-align:right;">Action</th>
                   </tr>
                 </thead>
                 <tbody id="partnersTbody"></tbody>
@@ -102,7 +130,7 @@
           </div>
 
           <div class="micro-note">
-            When connected, website names + full URLs appear instantly.
+            Revenue splits and payouts are secured via smart contracts. Your share is enforced on-chain.
           </div>
         </div>
       </section>
@@ -234,18 +262,20 @@
         <div class="how-modern">
           <div class="how-hero">
             <div class="how-hero-title">
-              You bring the traffic. We provide the websites. We handle payouts.
+              You bring the traffic. We provide the websites. Smart contracts enforce the split.
             </div>
             <div class="how-hero-sub">
-              Choose a partner site, generate your affiliate link, and promote it. When users convert, revenue is split automatically.
+              Partner links are hidden until a wallet connects to reduce scraping and spam bots.
+              When users convert through your affiliate link, revenue is split automatically and enforced by smart contracts.
               Payouts are processed and sent in crypto within 24 hours.
             </div>
 
             <div class="how-highlight">
-              <div class="how-highlight-title">Revenue Split</div>
+              <div class="how-highlight-title">Revenue Options</div>
               <div class="how-highlight-sub">
-                We take a <span class="accent">50%</span> cut. Your <span class="accent2">50%</span> is guaranteed and enforced
-                regardless of the revenue amount.
+                Standard split: <span class="accent">50%</span> to the platform and <span class="accent2">50%</span> to you.
+                Upgrade option: <span class="accent2">95%</span> to you for a <span class="accent">$399</span> one-time payment
+                (applies across all partners).
               </div>
             </div>
           </div>
@@ -257,46 +287,45 @@
                 <div class="how-card-title">Connect Phantom</div>
               </div>
               <div class="how-card-text">
-                Connect your wallet to unlock partner visibility and dashboard tools.
+                Connect your wallet to unlock partner visibility and affiliate tools.
               </div>
             </div>
 
             <div class="how-card">
               <div class="how-card-top">
                 <div class="how-chip">02</div>
-                <div class="how-card-title">Pick partner sites</div>
+                <div class="how-card-title">Generate your link</div>
               </div>
               <div class="how-card-text">
-                Browse curated crypto platforms and choose offers that fit your audience.
+                Use the Generate button next to a partner to create your affiliate link instantly.
               </div>
             </div>
 
             <div class="how-card">
               <div class="how-card-top">
                 <div class="how-chip">03</div>
-                <div class="how-card-title">Share your link</div>
+                <div class="how-card-title">Smart-contract enforced split</div>
               </div>
               <div class="how-card-text">
-                Post and promote your affiliate link. Track clicks and performance in Analytics.
+                Revenue splits are enforced by smart contracts — the payout rules can’t be changed or bypassed.
               </div>
             </div>
 
             <div class="how-card">
               <div class="how-card-top">
                 <div class="how-chip">04</div>
-                <div class="how-card-title">Get paid in crypto</div>
+                <div class="how-card-title">Crypto payout within 24 hours</div>
               </div>
               <div class="how-card-text">
-                We process earnings and send crypto to your connected wallet within 24 hours.
+                Earnings are processed and sent to your connected wallet in crypto within 24 hours.
               </div>
             </div>
           </div>
 
           <div class="how-footer-card">
-            <div class="how-footer-title">Guaranteed split policy</div>
+            <div class="how-footer-title">Upgrade to 95%</div>
             <div class="how-footer-text">
-              The 50% share to affiliates is guaranteed and enforced no matter the revenue.
-              Payout processing is handled by us, and transfers are issued within 24 hours.
+              One-time payment of $399 unlocks 95% commission across all partner links. The split and payouts remain enforced by smart contracts.
             </div>
           </div>
         </div>
