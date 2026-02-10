@@ -1,12 +1,7 @@
-/* LinkCryptVault - UI-perfect connect flow (button-driven) */
-
 const state = {
-  // IMPORTANT: This is UI-driven. We still call wallet.connect(),
-  // but the UI state is controlled by clicks to match the exact prototype behavior.
   connected: false,
   publicKey: null,
   view: "home",
-
   upgraded: false,
 };
 
@@ -26,9 +21,7 @@ const PARTNERS = [
 ];
 
 function getWalletProvider() {
-  const provider = window?.solana;
-  if (provider) return provider;
-  return null;
+  return window?.solana || null;
 }
 
 function shortAddress(addr) {
@@ -39,23 +32,32 @@ function shortAddress(addr) {
 function maskNamePartial(name) {
   if (!name) return "—";
   if (name.length <= 2) return "★".repeat(name.length);
-  const first = name.slice(0, 1);
-  const last = name.slice(-1);
-  const mid = "★".repeat(Math.max(3, name.length - 2));
-  return `${first}${mid}${last}`;
+  return `${name.slice(0, 1)}${"★".repeat(Math.max(3, name.length - 2))}${name.slice(-1)}`;
 }
 
 function maskUrlPartial(url) {
   if (!url) return "—";
-  const protoMatch = url.match(/^(https?:\/\/)/i);
-  const proto = protoMatch ? protoMatch[1] : "";
+  const proto = (url.match(/^(https?:\/\/)/i)?.[1]) || "";
   const rest = proto ? url.slice(proto.length) : url;
-
-  if (rest.length <= 10) return proto + "★".repeat(Math.max(8, rest.length));
   const head = rest.slice(0, 2);
   const tail = rest.slice(-4);
   const stars = "★".repeat(Math.max(10, rest.length - (head.length + tail.length)));
   return proto + head + stars + tail;
+}
+
+/* ---------- MODAL ---------- */
+const modal = () => document.getElementById("walletModal");
+function openModal() {
+  const m = modal();
+  if (!m) return;
+  m.classList.add("is-open");
+  m.setAttribute("aria-hidden", "false");
+}
+function closeModal() {
+  const m = modal();
+  if (!m) return;
+  m.classList.remove("is-open");
+  m.setAttribute("aria-hidden", "true");
 }
 
 /* ---------- NAV ---------- */
@@ -64,112 +66,98 @@ function setActiveNav(view) {
     btn.classList.toggle("is-active", btn.dataset.view === view);
   });
 }
-
 function showView(view) {
   state.view = view;
-
-  document.querySelectorAll(".view").forEach((section) => {
-    section.classList.remove("is-visible");
-  });
-
-  const el = document.getElementById(`view-${view}`);
-  if (el) el.classList.add("is-visible");
-
+  document.querySelectorAll(".view").forEach((s) => s.classList.remove("is-visible"));
+  document.getElementById(`view-${view}`)?.classList.add("is-visible");
   setActiveNav(view);
-  renderAll();
 }
 
-/* ---------- MODAL ---------- */
-function modalEl() {
-  return document.getElementById("walletModal");
-}
-function openModal() {
-  const m = modalEl();
-  if (!m) return;
-  m.classList.add("is-open");
-  m.setAttribute("aria-hidden", "false");
-}
-function closeModal() {
-  const m = modalEl();
-  if (!m) return;
-  m.classList.remove("is-open");
-  m.setAttribute("aria-hidden", "true");
-}
-
-/* ---------- UI RULES (BUTTON-DRIVEN) ---------- */
-/*
-  Rules we enforce exactly:
-
-  - Disconnect button ONLY visible when connected (state.connected = true)
-  - Home CTA:
-      disconnected => show Connect-to-Reveal + $399 button (two buttons)
-      connected    => show ONLY $399 button centered, connect-to-reveal hidden
-  - If $399 pressed while disconnected => modal appears (connect required)
-*/
-
-function setHeaderButtons() {
+/* ---------- HARD UI CONTROL (no guessing) ---------- */
+function forceHeaderUI() {
+  const disconnectBtn = document.getElementById("disconnectBtn");
   const connectBtn = document.getElementById("connectBtn");
   const connectBtnText = document.getElementById("connectBtnText");
-  const disconnectBtn = document.getElementById("disconnectBtn");
-  if (!connectBtn || !connectBtnText || !disconnectBtn) return;
+
+  if (!disconnectBtn || !connectBtn || !connectBtnText) return;
 
   if (state.connected && state.publicKey) {
-    connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
+    // Connected: show disconnect, show connected text
+    disconnectBtn.hidden = false;
     connectBtn.classList.add("is-connected");
-    disconnectBtn.hidden = false; // ✅ only when connected
+    connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
   } else {
-    connectBtnText.textContent = "Connect Wallet";
+    // Disconnected: hide disconnect (hard)
+    disconnectBtn.hidden = true;
     connectBtn.classList.remove("is-connected");
-    disconnectBtn.hidden = true; // ✅ hidden when disconnected
+    connectBtnText.textContent = "Connect Wallet";
   }
 }
 
-function renderHomeActions() {
-  const connectStartBtn = document.getElementById("connectStartBtn");
-  const upgradeBtn = document.getElementById("upgradeBtn");
+function ensureConnectRevealButtonExists() {
   const wrap = document.getElementById("homeActionsWrap");
-  if (!connectStartBtn || !upgradeBtn || !wrap) return;
+  if (!wrap) return;
+
+  let btn = document.getElementById("connectStartBtn");
+  if (!btn) {
+    // Recreate on disconnect
+    btn = document.createElement("button");
+    btn.id = "connectStartBtn";
+    btn.className = "btn btn-glow";
+    btn.type = "button";
+    btn.innerHTML = `<span class="btn-shine" aria-hidden="true"></span>Connect Wallet to Reveal Links`;
+    btn.addEventListener("click", connectFlow);
+
+    // Insert as first button in duo
+    wrap.prepend(btn);
+  }
+}
+
+function removeConnectRevealButtonForeverForSession() {
+  const btn = document.getElementById("connectStartBtn");
+  if (btn) btn.remove(); // ✅ physically gone = cannot “reappear”
+}
+
+function forceHomeHeroUI() {
+  const wrap = document.getElementById("homeActionsWrap");
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  if (!wrap || !upgradeBtn) return;
 
   if (state.connected) {
-    // ✅ once connected, connect-to-reveal disappears
-    connectStartBtn.hidden = true;
-
-    // ✅ only $399 remains
+    // Connected: remove connect-to-reveal button, only upgrade centered
+    removeConnectRevealButtonForeverForSession();
     upgradeBtn.hidden = false;
 
-    // ✅ centered single CTA layout
     wrap.classList.remove("hero-actions-duo");
     wrap.classList.add("hero-actions-single");
-    return;
+  } else {
+    // Disconnected: make sure connect-to-reveal exists + show both
+    ensureConnectRevealButtonExists();
+    upgradeBtn.hidden = false;
+
+    wrap.classList.add("hero-actions-duo");
+    wrap.classList.remove("hero-actions-single");
   }
-
-  // disconnected: show both buttons
-  connectStartBtn.hidden = false;
-  upgradeBtn.hidden = false;
-
-  wrap.classList.add("hero-actions-duo");
-  wrap.classList.remove("hero-actions-single");
 }
 
+/* ---------- TABLE ---------- */
 function currentRevShare() {
-  if (state.connected && state.upgraded) return "95%";
-  return "50%";
+  return state.connected && state.upgraded ? "95%" : "50%";
 }
-
 function renderPartnersTable() {
   const tbody = document.getElementById("partnersTbody");
   if (!tbody) return;
 
   const revShare = currentRevShare();
 
-  const rows = PARTNERS.map((p) => {
+  tbody.innerHTML = PARTNERS.map((p) => {
     const displayName = state.connected ? p.name : maskNamePartial(p.name);
     const displayUrl = state.connected ? p.url : maskUrlPartial(p.url);
 
     const locked = !state.connected;
     const lockIcon = locked ? `<span class="lock" aria-hidden="true">🔒</span>` : "";
-    const btnDisabled = locked ? "disabled" : "";
-    const btnClass = locked ? "btn-mini btn-mini-locked" : "btn-mini";
+    const disabled = locked ? "disabled" : "";
+    const cls = locked ? "btn-mini btn-mini-locked" : "btn-mini";
 
     return `
       <tr>
@@ -177,20 +165,17 @@ function renderPartnersTable() {
         <td><span class="deal">${revShare}</span></td>
         <td class="mono">${displayUrl}</td>
         <td class="td-actions">
-          <button class="${btnClass}" data-generate="${p.id}" ${btnDisabled} type="button">
-            Generate ${lockIcon}
-          </button>
+          <button class="${cls}" data-generate="${p.id}" ${disabled} type="button">Generate ${lockIcon}</button>
         </td>
       </tr>
     `;
   }).join("");
 
-  tbody.innerHTML = rows;
-
   const overlay = document.getElementById("revealOverlay");
   if (overlay) overlay.style.display = state.connected ? "none" : "grid";
 }
 
+/* ---------- PAGES ---------- */
 function renderLinksPage() {
   const target = document.getElementById("linksContent");
   if (!target) return;
@@ -213,13 +198,7 @@ function renderLinksPage() {
 
     <div class="table-wrap">
       <table class="table" aria-label="My Links">
-        <thead>
-          <tr>
-            <th>Partner</th>
-            <th>Your Link</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Partner</th><th>Your Link</th><th>Status</th></tr></thead>
         <tbody>
           <tr class="empty-row">
             <td colspan="3">
@@ -242,48 +221,39 @@ function renderAnalyticsPage() {
 
   if (!state.connected) {
     timeline.innerHTML = `
-      <tr class="empty-row">
-        <td colspan="4">
-          <div class="empty-state">
-            <div class="empty-title">Connect wallet to view data</div>
-            <div class="empty-text">Analytics will populate after you connect.</div>
-          </div>
-        </td>
-      </tr>
+      <tr class="empty-row"><td colspan="4">
+        <div class="empty-state">
+          <div class="empty-title">Connect wallet to view data</div>
+          <div class="empty-text">Analytics will populate after you connect.</div>
+        </div>
+      </td></tr>
     `;
     perf.innerHTML = `
-      <tr class="empty-row">
-        <td colspan="4">
-          <div class="empty-state">
-            <div class="empty-title">Connect wallet to view data</div>
-            <div class="empty-text">Partner performance will appear after you connect.</div>
-          </div>
-        </td>
-      </tr>
+      <tr class="empty-row"><td colspan="4">
+        <div class="empty-state">
+          <div class="empty-title">Connect wallet to view data</div>
+          <div class="empty-text">Partner performance will appear after you connect.</div>
+        </div>
+      </td></tr>
     `;
     return;
   }
 
   timeline.innerHTML = `
-    <tr class="empty-row">
-      <td colspan="4">
-        <div class="empty-state">
-          <div class="empty-title">No earnings yet</div>
-          <div class="empty-text">Analytics will populate once your links generate activity.</div>
-        </div>
-      </td>
-    </tr>
+    <tr class="empty-row"><td colspan="4">
+      <div class="empty-state">
+        <div class="empty-title">No earnings yet</div>
+        <div class="empty-text">Analytics will populate once your links generate activity.</div>
+      </div>
+    </td></tr>
   `;
-
   perf.innerHTML = `
-    <tr class="empty-row">
-      <td colspan="4">
-        <div class="empty-state">
-          <div class="empty-title">No partner metrics yet</div>
-          <div class="empty-text">Share affiliate links to start tracking clicks and revenue.</div>
-        </div>
-      </td>
-    </tr>
+    <tr class="empty-row"><td colspan="4">
+      <div class="empty-state">
+        <div class="empty-title">No partner metrics yet</div>
+        <div class="empty-text">Share affiliate links to start tracking clicks and revenue.</div>
+      </div>
+    </td></tr>
   `;
 }
 
@@ -297,24 +267,26 @@ function renderStats() {
     e.textContent = "—";
     c.textContent = "—";
     r.textContent = "—";
-    return;
+  } else {
+    e.textContent = "$0.00";
+    c.textContent = "0";
+    r.textContent = "0.0%";
   }
-
-  e.textContent = "$0.00";
-  c.textContent = "0";
-  r.textContent = "0.0%";
 }
 
 function renderAll() {
-  setHeaderButtons();
-  renderHomeActions();
+  // HARD FORCE UI
+  forceHeaderUI();
+  forceHomeHeroUI();
+
+  // Content
   renderPartnersTable();
   renderLinksPage();
   renderAnalyticsPage();
   renderStats();
 }
 
-/* ---------- CONNECT/DISCONNECT (BUTTON-DRIVEN UI) ---------- */
+/* ---------- CONNECT / DISCONNECT ---------- */
 async function doWalletConnect() {
   const wallet = getWalletProvider();
   if (!wallet) {
@@ -322,8 +294,7 @@ async function doWalletConnect() {
     return null;
   }
   const resp = await wallet.connect();
-  const pubkey = resp?.publicKey?.toString?.() || wallet?.publicKey?.toString?.();
-  return pubkey || null;
+  return resp?.publicKey?.toString?.() || wallet?.publicKey?.toString?.() || null;
 }
 
 async function connectFlow() {
@@ -331,64 +302,56 @@ async function connectFlow() {
     const pubkey = await doWalletConnect();
     if (!pubkey) return;
 
-    // ✅ UI now treated as connected because user clicked connect and connect succeeded
+    // Connected (button-driven, but still real connect call)
     state.connected = true;
     state.publicKey = pubkey;
 
-    // ✅ close modal if it was open
     closeModal();
-
     renderAll();
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error(e);
   }
 }
 
 async function disconnectFlow() {
   const wallet = getWalletProvider();
-  try {
-    await wallet?.disconnect?.();
-  } catch (_) {}
+  try { await wallet?.disconnect?.(); } catch {}
 
-  // ✅ UI now treated as disconnected
   state.connected = false;
   state.publicKey = null;
 
+  // On disconnect, connect-to-reveal returns (we recreate it)
   renderAll();
 }
 
-/* ---------- UPGRADE CTA ---------- */
+/* ---------- UPGRADE ---------- */
 function handleUpgradeClick() {
-  // ✅ if not connected, show modal (connect required)
   if (!state.connected) {
     openModal();
     return;
   }
-
-  // UI-only upgrade (hide button after click)
   state.upgraded = true;
 
+  // UI-only: remove upgrade button after click (as requested earlier)
   const upgradeBtn = document.getElementById("upgradeBtn");
   if (upgradeBtn) upgradeBtn.hidden = true;
 
   renderAll();
 }
 
-/* ---------- GENERATE LINK ---------- */
-function buildAffiliateLink(partner) {
-  const base = partner.url;
+/* ---------- GENERATE ---------- */
+function buildAffiliateLink(p) {
+  const base = p.url;
   const ref = state.publicKey ? state.publicKey.slice(0, 8) : "anonymous";
   return `${base}${base.includes("?") ? "&" : "?"}ref=${encodeURIComponent(ref)}`;
 }
 
 async function handleGenerate(partnerId) {
   if (!state.connected) return;
+  const p = PARTNERS.find(x => x.id === partnerId);
+  if (!p) return;
 
-  const partner = PARTNERS.find((p) => p.id === partnerId);
-  if (!partner) return;
-
-  const link = buildAffiliateLink(partner);
-
+  const link = buildAffiliateLink(p);
   try {
     await navigator.clipboard.writeText(link);
     alert(`Affiliate link copied:\n\n${link}`);
@@ -397,59 +360,47 @@ async function handleGenerate(partnerId) {
   }
 }
 
+/* ---------- EVENTS ---------- */
 function attachEvents() {
-  // Header buttons
   document.getElementById("connectBtn")?.addEventListener("click", connectFlow);
   document.getElementById("disconnectBtn")?.addEventListener("click", disconnectFlow);
 
-  // Home CTAs
+  // connectStartBtn is created dynamically on disconnect too, but initial one exists:
   document.getElementById("connectStartBtn")?.addEventListener("click", connectFlow);
+
   document.getElementById("upgradeBtn")?.addEventListener("click", handleUpgradeClick);
 
-  // Modal connect + close
   document.getElementById("modalConnectBtn")?.addEventListener("click", connectFlow);
 
   document.addEventListener("click", (e) => {
     const t = e.target;
     if (!(t instanceof Element)) return;
 
-    if (t.matches("[data-modal-close='true']")) closeModal();
-    if (t.closest("[data-modal-close='true']")) closeModal();
+    if (t.matches("[data-modal-close='true']") || t.closest("[data-modal-close='true']")) closeModal();
+
+    const gen = t.closest("[data-generate]");
+    if (gen) {
+      const id = gen.getAttribute("data-generate");
+      if (id && !(gen instanceof HTMLButtonElement && gen.disabled)) handleGenerate(id);
+    }
   });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
 
-  // Nav
   document.querySelectorAll(".nav-link").forEach((btn) => {
     btn.addEventListener("click", () => showView(btn.dataset.view));
-  });
-
-  // Table generate buttons (event delegation)
-  document.addEventListener("click", (e) => {
-    const target = e.target;
-    if (!(target instanceof Element)) return;
-
-    const btn = target.closest("[data-generate]");
-    if (!btn) return;
-
-    const partnerId = btn.getAttribute("data-generate");
-    if (!partnerId) return;
-
-    if (btn instanceof HTMLButtonElement && btn.disabled) return;
-    handleGenerate(partnerId);
   });
 }
 
 function init() {
-  attachEvents();
-  showView("home");
-
-  // Start fully disconnected for perfect presentation
+  // Start perfect: disconnected, disconnect button must never appear
   state.connected = false;
   state.publicKey = null;
 
+  attachEvents();
+  showView("home");
   renderAll();
 }
 
