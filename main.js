@@ -1,4 +1,4 @@
-/* LinkCryptVault - Phantom connect + modern affiliate UI */
+/* LinkCryptVault - Wallet connect + modern affiliate UI */
 
 const state = {
   connected: false,
@@ -28,9 +28,10 @@ const PARTNERS = [
   { id: "volt", name: "VoltFutures", url: "https://voltfutures.exchange/affiliate" },
 ];
 
-function getPhantom() {
+function getWalletProvider() {
+  // Works with Phantom and other solana providers injected as window.solana
   const provider = window?.solana;
-  if (provider?.isPhantom) return provider;
+  if (provider) return provider;
   return null;
 }
 
@@ -92,10 +93,14 @@ function setHeaderButtons() {
   if (state.connected && state.publicKey) {
     connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
     connectBtn.classList.add("is-connected");
+
+    // Visible ONLY when connected
     disconnectBtn.hidden = false;
   } else {
     connectBtnText.textContent = "Connect Wallet";
     connectBtn.classList.remove("is-connected");
+
+    // Invisible when not connected
     disconnectBtn.hidden = true;
   }
 }
@@ -105,27 +110,25 @@ function renderHomeActions() {
   const upgradeBtn = document.getElementById("upgradeBtn");
   if (!connectBtn || !upgradeBtn) return;
 
-  // If wallet connected, never show the connect CTA again
+  // Once wallet is connected: Connect CTA disappears, upgrade stays
   if (state.connected) {
     connectBtn.hidden = true;
-    upgradeBtn.hidden = true;
+    upgradeBtn.hidden = !!state.upgradeCtaDismissed;
     return;
   }
 
-  // If user hasn't pressed connect CTA yet, show it
+  // Not connected: show Connect CTA until clicked; then show upgrade
   if (!state.connectCtaDismissed) {
     connectBtn.hidden = false;
     upgradeBtn.hidden = true;
     return;
   }
 
-  // After connect CTA pressed, show upgrade CTA (until dismissed)
   connectBtn.hidden = true;
   upgradeBtn.hidden = !!state.upgradeCtaDismissed;
 }
 
 function currentRevShare() {
-  // UI logic: if upgraded, show 95% for connected users; otherwise 50%
   if (state.connected && state.upgraded) return "95%";
   return "50%";
 }
@@ -289,15 +292,15 @@ function renderAll() {
 }
 
 async function connectWallet() {
-  const phantom = getPhantom();
-  if (!phantom) {
-    alert("Phantom Wallet not detected. Please install Phantom or open this site inside Phantom’s browser.");
+  const wallet = getWalletProvider();
+  if (!wallet) {
+    alert("Wallet not detected. Please install a compatible wallet or open this site inside a wallet browser.");
     return;
   }
 
   try {
-    const resp = await phantom.connect();
-    const pubkey = resp?.publicKey?.toString?.() || phantom?.publicKey?.toString?.();
+    const resp = await wallet.connect();
+    const pubkey = resp?.publicKey?.toString?.() || wallet?.publicKey?.toString?.();
 
     state.connected = true;
     state.publicKey = pubkey || null;
@@ -309,9 +312,9 @@ async function connectWallet() {
 }
 
 async function disconnectWallet() {
-  const phantom = getPhantom();
+  const wallet = getWalletProvider();
   try {
-    await phantom?.disconnect?.();
+    await wallet?.disconnect?.();
   } catch (_) {
     // ignore
   }
@@ -351,7 +354,7 @@ function attachEvents() {
 
   // Home CTA flow
   document.getElementById("connectStartBtn")?.addEventListener("click", async () => {
-    // Hide the connect CTA immediately (as requested), then attempt connect via Phantom
+    // Dismiss the connect CTA immediately
     state.connectCtaDismissed = true;
     renderHomeActions();
     await connectWallet();
@@ -386,16 +389,16 @@ function attachEvents() {
 }
 
 function syncIfAlreadyConnected() {
-  const phantom = getPhantom();
-  if (!phantom) return;
+  const wallet = getWalletProvider();
+  if (!wallet) return;
 
-  const pubkey = phantom?.publicKey?.toString?.();
+  const pubkey = wallet?.publicKey?.toString?.();
   if (pubkey) {
     state.connected = true;
     state.publicKey = pubkey;
   }
 
-  phantom.on?.("accountChanged", (publicKey) => {
+  wallet.on?.("accountChanged", (publicKey) => {
     if (publicKey) {
       state.connected = true;
       state.publicKey = publicKey.toString();
