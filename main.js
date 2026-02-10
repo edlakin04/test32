@@ -73,7 +73,7 @@ function showView(view) {
   setActiveNav(view);
 }
 
-/* ---------- HARD UI CONTROL (no guessing) ---------- */
+/* ---------- HARD UI CONTROL ---------- */
 function forceHeaderUI() {
   const disconnectBtn = document.getElementById("disconnectBtn");
   const connectBtn = document.getElementById("connectBtn");
@@ -82,12 +82,10 @@ function forceHeaderUI() {
   if (!disconnectBtn || !connectBtn || !connectBtnText) return;
 
   if (state.connected && state.publicKey) {
-    // Connected: show disconnect, show connected text
     disconnectBtn.hidden = false;
     connectBtn.classList.add("is-connected");
     connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
   } else {
-    // Disconnected: hide disconnect (hard)
     disconnectBtn.hidden = true;
     connectBtn.classList.remove("is-connected");
     connectBtnText.textContent = "Connect Wallet";
@@ -100,22 +98,19 @@ function ensureConnectRevealButtonExists() {
 
   let btn = document.getElementById("connectStartBtn");
   if (!btn) {
-    // Recreate on disconnect
     btn = document.createElement("button");
     btn.id = "connectStartBtn";
     btn.className = "btn btn-glow";
     btn.type = "button";
     btn.innerHTML = `<span class="btn-shine" aria-hidden="true"></span>Connect Wallet to Reveal Links`;
     btn.addEventListener("click", connectFlow);
-
-    // Insert as first button in duo
     wrap.prepend(btn);
   }
 }
 
 function removeConnectRevealButtonForeverForSession() {
   const btn = document.getElementById("connectStartBtn");
-  if (btn) btn.remove(); // ✅ physically gone = cannot “reappear”
+  if (btn) btn.remove();
 }
 
 function forceHomeHeroUI() {
@@ -124,14 +119,12 @@ function forceHomeHeroUI() {
   if (!wrap || !upgradeBtn) return;
 
   if (state.connected) {
-    // Connected: remove connect-to-reveal button, only upgrade centered
     removeConnectRevealButtonForeverForSession();
     upgradeBtn.hidden = false;
 
     wrap.classList.remove("hero-actions-duo");
     wrap.classList.add("hero-actions-single");
   } else {
-    // Disconnected: make sure connect-to-reveal exists + show both
     ensureConnectRevealButtonExists();
     upgradeBtn.hidden = false;
 
@@ -144,6 +137,7 @@ function forceHomeHeroUI() {
 function currentRevShare() {
   return state.connected && state.upgraded ? "95%" : "50%";
 }
+
 function renderPartnersTable() {
   const tbody = document.getElementById("partnersTbody");
   if (!tbody) return;
@@ -247,6 +241,7 @@ function renderAnalyticsPage() {
       </div>
     </td></tr>
   `;
+
   perf.innerHTML = `
     <tr class="empty-row"><td colspan="4">
       <div class="empty-state">
@@ -275,11 +270,9 @@ function renderStats() {
 }
 
 function renderAll() {
-  // HARD FORCE UI
   forceHeaderUI();
   forceHomeHeroUI();
 
-  // Content
   renderPartnersTable();
   renderLinksPage();
   renderAnalyticsPage();
@@ -302,7 +295,6 @@ async function connectFlow() {
     const pubkey = await doWalletConnect();
     if (!pubkey) return;
 
-    // Connected (button-driven, but still real connect call)
     state.connected = true;
     state.publicKey = pubkey;
 
@@ -320,7 +312,6 @@ async function disconnectFlow() {
   state.connected = false;
   state.publicKey = null;
 
-  // On disconnect, connect-to-reveal returns (we recreate it)
   renderAll();
 }
 
@@ -330,9 +321,9 @@ function handleUpgradeClick() {
     openModal();
     return;
   }
+
   state.upgraded = true;
 
-  // UI-only: remove upgrade button after click (as requested earlier)
   const upgradeBtn = document.getElementById("upgradeBtn");
   if (upgradeBtn) upgradeBtn.hidden = true;
 
@@ -348,7 +339,7 @@ function buildAffiliateLink(p) {
 
 async function handleGenerate(partnerId) {
   if (!state.connected) return;
-  const p = PARTNERS.find(x => x.id === partnerId);
+  const p = PARTNERS.find((x) => x.id === partnerId);
   if (!p) return;
 
   const link = buildAffiliateLink(p);
@@ -365,11 +356,8 @@ function attachEvents() {
   document.getElementById("connectBtn")?.addEventListener("click", connectFlow);
   document.getElementById("disconnectBtn")?.addEventListener("click", disconnectFlow);
 
-  // connectStartBtn is created dynamically on disconnect too, but initial one exists:
   document.getElementById("connectStartBtn")?.addEventListener("click", connectFlow);
-
   document.getElementById("upgradeBtn")?.addEventListener("click", handleUpgradeClick);
-
   document.getElementById("modalConnectBtn")?.addEventListener("click", connectFlow);
 
   document.addEventListener("click", (e) => {
@@ -395,7 +383,6 @@ function attachEvents() {
 }
 
 function init() {
-  // Start perfect: disconnected, disconnect button must never appear
   state.connected = false;
   state.publicKey = null;
 
