@@ -5,10 +5,6 @@ const state = {
   publicKey: null,
   view: "home",
 
-  // Home CTA flow
-  connectCtaDismissed: false,
-  upgradeCtaDismissed: false,
-
   // Upgrade (UI only)
   upgraded: false,
 };
@@ -29,7 +25,6 @@ const PARTNERS = [
 ];
 
 function getWalletProvider() {
-  // Works with Phantom and other solana providers injected as window.solana
   const provider = window?.solana;
   if (provider) return provider;
   return null;
@@ -40,7 +35,6 @@ function shortAddress(addr) {
   return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 }
 
-/* Mask middle letters: keep first + last visible */
 function maskNamePartial(name) {
   if (!name) return "—";
   if (name.length <= 2) return "★".repeat(name.length);
@@ -50,7 +44,6 @@ function maskNamePartial(name) {
   return `${first}${mid}${last}`;
 }
 
-/* Mask URL: keep protocol + small head + tail visible */
 function maskUrlPartial(url) {
   if (!url) return "—";
   const protoMatch = url.match(/^(https?:\/\/)/i);
@@ -84,6 +77,23 @@ function showView(view) {
   renderAll();
 }
 
+/* Modal */
+function modalEl() {
+  return document.getElementById("walletModal");
+}
+function openModal() {
+  const m = modalEl();
+  if (!m) return;
+  m.classList.add("is-open");
+  m.setAttribute("aria-hidden", "false");
+}
+function closeModal() {
+  const m = modalEl();
+  if (!m) return;
+  m.classList.remove("is-open");
+  m.setAttribute("aria-hidden", "true");
+}
+
 function setHeaderButtons() {
   const connectBtn = document.getElementById("connectBtn");
   const connectBtnText = document.getElementById("connectBtnText");
@@ -94,38 +104,35 @@ function setHeaderButtons() {
     connectBtnText.textContent = `${shortAddress(state.publicKey)} • Connected`;
     connectBtn.classList.add("is-connected");
 
-    // Visible ONLY when connected
+    // Disconnect visible ONLY when connected
     disconnectBtn.hidden = false;
   } else {
     connectBtnText.textContent = "Connect Wallet";
     connectBtn.classList.remove("is-connected");
-
-    // Invisible when not connected
     disconnectBtn.hidden = true;
   }
 }
 
 function renderHomeActions() {
-  const connectBtn = document.getElementById("connectStartBtn");
+  const connectStartBtn = document.getElementById("connectStartBtn");
   const upgradeBtn = document.getElementById("upgradeBtn");
-  if (!connectBtn || !upgradeBtn) return;
+  const wrap = document.getElementById("homeActionsWrap");
+  if (!connectStartBtn || !upgradeBtn || !wrap) return;
 
-  // Once wallet is connected: Connect CTA disappears, upgrade stays
   if (state.connected) {
-    connectBtn.hidden = true;
-    upgradeBtn.hidden = !!state.upgradeCtaDismissed;
+    // After wallet connected: Connect CTA disappears, upgrade remains (centered)
+    connectStartBtn.hidden = true;
+    upgradeBtn.hidden = false;
+    wrap.classList.remove("hero-actions-duo");
+    wrap.classList.add("hero-actions-single");
     return;
   }
 
-  // Not connected: show Connect CTA until clicked; then show upgrade
-  if (!state.connectCtaDismissed) {
-    connectBtn.hidden = false;
-    upgradeBtn.hidden = true;
-    return;
-  }
-
-  connectBtn.hidden = true;
-  upgradeBtn.hidden = !!state.upgradeCtaDismissed;
+  // Disconnected: both buttons visible side-by-side
+  connectStartBtn.hidden = false;
+  upgradeBtn.hidden = false;
+  wrap.classList.add("hero-actions-duo");
+  wrap.classList.remove("hero-actions-single");
 }
 
 function currentRevShare() {
@@ -295,7 +302,7 @@ async function connectWallet() {
   const wallet = getWalletProvider();
   if (!wallet) {
     alert("Wallet not detected. Please install a compatible wallet or open this site inside a wallet browser.");
-    return;
+    return false;
   }
 
   try {
@@ -305,9 +312,14 @@ async function connectWallet() {
     state.connected = true;
     state.publicKey = pubkey || null;
 
+    // Close modal if it was open
+    closeModal();
+
     renderAll();
+    return true;
   } catch (err) {
     console.error(err);
+    return false;
   }
 }
 
@@ -326,7 +338,6 @@ async function disconnectWallet() {
 }
 
 function buildAffiliateLink(partner) {
-  // UI-only link format (placeholder)
   const base = partner.url;
   const ref = state.publicKey ? state.publicKey.slice(0, 8) : "anonymous";
   return `${base}${base.includes("?") ? "&" : "?"}ref=${encodeURIComponent(ref)}`;
@@ -348,23 +359,47 @@ async function handleGenerate(partnerId) {
   }
 }
 
+function handleUpgradeClick() {
+  // If not connected, show modal prompting connection
+  if (!state.connected) {
+    openModal();
+    return;
+  }
+
+  // UI-only “purchase”: mark upgraded and remove the upgrade button
+  state.upgraded = true;
+
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  if (upgradeBtn) upgradeBtn.hidden = true;
+
+  renderAll();
+}
+
 function attachEvents() {
   document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
   document.getElementById("disconnectBtn")?.addEventListener("click", disconnectWallet);
 
-  // Home CTA flow
+  // Home CTAs
   document.getElementById("connectStartBtn")?.addEventListener("click", async () => {
-    // Dismiss the connect CTA immediately
-    state.connectCtaDismissed = true;
-    renderHomeActions();
+    // Connect, then the connect CTA will disappear because connected=true
     await connectWallet();
   });
 
-  document.getElementById("upgradeBtn")?.addEventListener("click", () => {
-    // UI-only “purchase”: mark upgraded and remove the button
-    state.upgradeCtaDismissed = true;
-    state.upgraded = true;
-    renderAll();
+  document.getElementById("upgradeBtn")?.addEventListener("click", handleUpgradeClick);
+
+  // Modal connect + close
+  document.getElementById("modalConnectBtn")?.addEventListener("click", connectWallet);
+
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+
+    if (t.matches("[data-modal-close='true']")) closeModal();
+    if (t.closest("[data-modal-close='true']")) closeModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
   });
 
   // Nav
