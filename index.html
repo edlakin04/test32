@@ -20,7 +20,6 @@
         <h1 class="brand-title">LinkCryptVault</h1>
 
         <div class="header-actions">
-          <!-- MUST never show unless connected -->
           <button id="disconnectBtn" class="btn btn-ghost btn-header" type="button" hidden>
             Disconnect
           </button>
@@ -46,6 +45,7 @@
     </div>
 
     <main class="container">
+      <!-- HOME -->
       <section id="view-home" class="view is-visible" aria-label="Home">
         <div class="hero-centered">
           <h2 class="hero-title">
@@ -59,13 +59,11 @@
           </p>
 
           <div class="hero-actions-centered hero-actions-duo" id="homeActionsWrap">
-            <!-- This button will be REMOVED from DOM once connected -->
             <button id="connectStartBtn" class="btn btn-glow" type="button">
               <span class="btn-shine" aria-hidden="true"></span>
               Connect Wallet to Reveal Links
             </button>
 
-            <!-- Always visible. If clicked while disconnected => modal -->
             <button id="upgradeBtn" class="btn btn-upgrade" type="button">
               $399 for 95% commission
               <span class="btn-arrow" aria-hidden="true">→</span>
@@ -132,6 +130,7 @@
         </div>
       </section>
 
+      <!-- MY LINKS -->
       <section id="view-links" class="view" aria-label="My Links">
         <div class="page-head">
           <h2 class="page-title">My Links</h2>
@@ -145,6 +144,7 @@
         </div>
       </section>
 
+      <!-- ANALYTICS -->
       <section id="view-analytics" class="view" aria-label="Analytics">
         <div class="page-head">
           <h2 class="page-title">Analytics</h2>
@@ -241,6 +241,7 @@
         </div>
       </section>
 
+      <!-- HOW IT WORKS -->
       <section id="view-how" class="view" aria-label="How it works">
         <div class="page-head">
           <h2 class="page-title">How it works</h2>
@@ -274,7 +275,9 @@
                 <div class="how-chip">01</div>
                 <div class="how-card-title">Connect wallet</div>
               </div>
-              <div class="how-card-text">Connect your wallet to unlock partner visibility and affiliate tools.</div>
+              <div class="how-card-text">
+                Connect your wallet to unlock partner visibility and affiliate tools.
+              </div>
             </div>
 
             <div class="how-card">
@@ -282,7 +285,9 @@
                 <div class="how-chip">02</div>
                 <div class="how-card-title">Generate your link</div>
               </div>
-              <div class="how-card-text">Use the Generate button next to a partner to create your affiliate link instantly.</div>
+              <div class="how-card-text">
+                Use the Generate button next to a partner to create your affiliate link instantly.
+              </div>
             </div>
 
             <div class="how-card">
@@ -290,7 +295,9 @@
                 <div class="how-chip">03</div>
                 <div class="how-card-title">Smart-contract enforcement</div>
               </div>
-              <div class="how-card-text">Revenue splits and payouts are enforced by smart contracts — the rules can’t be bypassed.</div>
+              <div class="how-card-text">
+                Revenue splits and payouts are enforced by smart contracts — the rules can’t be bypassed.
+              </div>
             </div>
 
             <div class="how-card">
@@ -298,7 +305,9 @@
                 <div class="how-chip">04</div>
                 <div class="how-card-title">Crypto payout within 24 hours</div>
               </div>
-              <div class="how-card-text">Earnings are processed and sent to your connected wallet in crypto within 24 hours.</div>
+              <div class="how-card-text">
+                Earnings are processed and sent to your connected wallet in crypto within 24 hours.
+              </div>
             </div>
           </div>
 
