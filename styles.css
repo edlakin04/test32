@@ -1,6 +1,5 @@
 :root {
   --bg: #070a12;
-  --panel: rgba(255, 255, 255, 0.06);
   --text: rgba(255, 255, 255, 0.90);
   --muted: rgba(255, 255, 255, 0.62);
 
@@ -13,9 +12,6 @@
 
   --max: 1180px;
 }
-/* HARD FORCE: if hidden attribute exists, NEVER display */
-#disconnectBtn[hidden] { display: none !important; }
-#connectStartBtn[hidden] { display: none !important; }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -31,6 +27,10 @@ body {
   color: var(--text);
   overflow-x: hidden;
 }
+
+/* HARD FORCE: never show if hidden attribute is present */
+#disconnectBtn[hidden] { display: none !important; }
+#connectStartBtn[hidden] { display: none !important; }
 
 .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
 .orb {
@@ -56,8 +56,6 @@ body {
 }
 
 .header-inner {
-  position: relative;
-  z-index: 2;
   margin: 0 auto;
   padding: 18px 18px 14px;
   display: flex;
@@ -82,24 +80,10 @@ body {
 }
 
 /* Tabs BELOW header */
-.tabs-bar {
-  position: sticky;
-  top: 66px;
-  z-index: 6;
-  background: transparent;
-}
-.tabs-inner {
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 6px 18px 10px;
-}
+.tabs-bar { position: sticky; top: 66px; z-index: 6; }
+.tabs-inner { max-width: var(--max); margin: 0 auto; padding: 6px 18px 10px; }
 
-.nav {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  flex-wrap: wrap;
-}
+.nav { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
 .nav-centered { justify-content: center; }
 
 .nav-link {
@@ -134,7 +118,7 @@ body {
 .view { display: none; }
 .view.is-visible { display: block; }
 
-/* Home hero */
+/* Hero */
 .hero-centered {
   display: grid;
   place-items: center;
@@ -172,7 +156,7 @@ body {
   color: transparent;
 }
 
-/* Home actions layout */
+/* Home actions */
 .hero-actions-centered {
   margin-top: 18px;
   display: flex;
@@ -180,15 +164,11 @@ body {
   gap: 10px;
   flex-wrap: wrap;
 }
-
-/* Two buttons (disconnected) */
 .hero-actions-duo { justify-content: center; }
-
-/* Single button (connected) */
 .hero-actions-single { justify-content: center; }
 .hero-actions-single .btn { min-width: 280px; }
 
-/* Pricing tiers on home */
+/* Tiers */
 .tiers {
   margin-top: 16px;
   width: min(980px, 100%);
@@ -202,7 +182,7 @@ body {
   border-radius: 22px;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+  box-shadow: var(--shadow);
   padding: 14px;
   text-align: left;
   position: relative;
@@ -305,16 +285,12 @@ body {
 }
 .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
 
-/* Connected header button: duller / premium */
 .btn-header.is-connected {
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.12);
   box-shadow: 0 14px 45px rgba(0,0,0,0.42);
 }
-.btn-header.is-connected:hover {
-  background: rgba(255,255,255,0.09);
-  filter: none;
-}
+.btn-header.is-connected:hover { background: rgba(255,255,255,0.09); filter: none; }
 
 .btn-glow {
   background: rgba(255,255,255,0.06);
@@ -385,7 +361,7 @@ body {
 
 .lock{ margin-left: 6px; opacity: 0.9; }
 
-/* Cards / panels */
+/* Cards / panels base */
 .panel, .table-card, .stat-card, .how-hero, .how-card, .how-footer-card, .tier-card {
   border-radius: var(--radius-lg);
   background: rgba(255,255,255,0.06);
@@ -487,7 +463,7 @@ body {
 }
 .td-actions{ text-align:right; }
 
-/* Reveal overlay (no button) */
+/* Reveal overlay */
 .reveal-overlay {
   position: absolute;
   inset: 0;
@@ -519,7 +495,7 @@ body {
   line-height: 1.55;
 }
 
-/* Locked text blocks */
+/* Locked / empty states */
 .locked-copy { text-align: center; padding: 18px 10px; }
 .locked-title { font-weight: 1000; color: rgba(255,255,255,0.94); letter-spacing: -0.3px; margin-bottom: 6px; }
 .locked-sub { color: rgba(255,255,255,0.62); line-height: 1.6; }
@@ -528,6 +504,8 @@ body {
 .empty-state { text-align: center; padding: 8px 0; }
 .empty-title { font-weight: 1000; color: rgba(255,255,255,0.90); margin-bottom: 6px; letter-spacing: -0.2px; }
 .empty-text { color: rgba(255,255,255,0.58); }
+
+.table-wrap { overflow: auto; border-radius: 18px; }
 
 /* Analytics */
 .analytics-grid {
@@ -567,6 +545,172 @@ body {
   color: rgba(255,255,255,0.94);
 }
 .stat-foot { color: rgba(255,255,255,0.55); font-size: 12.5px; line-height: 1.45; }
+
+/* Small charts in stat cards */
+.card-chart {
+  height: 56px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.10);
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 10px;
+}
+.chart-line {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(124,92,255,0.0), rgba(124,92,255,0.22), rgba(34,211,238,0.20), rgba(34,211,238,0.0));
+  mask-image: linear-gradient(90deg, transparent, black 20%, black 80%, transparent);
+}
+.chart-bars {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.00) 0px,
+    rgba(255,255,255,0.00) 10px,
+    rgba(34,211,238,0.14) 10px,
+    rgba(34,211,238,0.14) 16px
+  );
+  opacity: 0.9;
+  mask-image: linear-gradient(90deg, transparent, black 14%, black 86%, transparent);
+}
+.chart-wave {
+  position: absolute;
+  inset: -40px -20px;
+  background: radial-gradient(circle at 30% 40%, rgba(167, 139, 250, 0.18), transparent 55%),
+              radial-gradient(circle at 70% 60%, rgba(34, 211, 238, 0.16), transparent 55%);
+  transform: rotate(-6deg);
+}
+
+/* Big chart block */
+.big-chart {
+  height: 180px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.10);
+  margin: 12px 0 14px;
+  position: relative;
+  overflow: hidden;
+}
+.big-chart-grid {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.45;
+}
+.big-chart-line {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(124,92,255,0.0), rgba(124,92,255,0.28), rgba(34,211,238,0.22), rgba(34,211,238,0.0));
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+
+/* How it works (modern layout restored) */
+.how-modern {
+  display: grid;
+  gap: 14px;
+  width: min(980px, 100%);
+  margin: 0 auto;
+}
+
+.how-hero { padding: 18px; }
+
+.how-hero-title {
+  font-weight: 1100;
+  letter-spacing: -0.6px;
+  font-size: 22px;
+  color: rgba(255,255,255,0.94);
+  margin-bottom: 8px;
+}
+
+.how-hero-sub {
+  color: rgba(255,255,255,0.62);
+  line-height: 1.65;
+}
+
+.how-highlight {
+  margin-top: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.10);
+  padding: 14px;
+}
+.how-highlight-title { font-weight: 1000; color: rgba(255,255,255,0.94); margin-bottom: 6px; }
+.how-highlight-sub { color: rgba(255,255,255,0.62); line-height: 1.6; }
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 980px) { .how-grid { grid-template-columns: 1fr; } }
+
+.how-card {
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.how-card::before {
+  content: "";
+  position: absolute;
+  inset: -60px -40px auto -60px;
+  height: 140px;
+  background: radial-gradient(circle at 30% 40%, rgba(124, 92, 255, 0.16), transparent 60%),
+              radial-gradient(circle at 70% 60%, rgba(34, 211, 238, 0.12), transparent 60%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.how-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.how-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  letter-spacing: -0.2px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.90);
+}
+
+.how-card-title {
+  font-weight: 1000;
+  letter-spacing: -0.35px;
+  color: rgba(255,255,255,0.94);
+  font-size: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.how-card-text {
+  color: rgba(255,255,255,0.62);
+  line-height: 1.6;
+  font-size: 13.5px;
+  position: relative;
+  z-index: 1;
+}
+
+.how-footer-card { padding: 18px; }
+.how-footer-title {
+  font-weight: 1100;
+  color: rgba(255,255,255,0.94);
+  margin-bottom: 8px;
+  letter-spacing: -0.35px;
+}
+.how-footer-text { color: rgba(255,255,255,0.62); line-height: 1.65; }
 
 /* Modal */
 .modal {
