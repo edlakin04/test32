@@ -61,15 +61,15 @@
             unwanted audiences. Payouts and splits are enforced using <span class="accent2">smart contracts</span>.
           </p>
 
-          <div class="hero-actions-centered" id="homeActionsWrap">
-            <!-- Disappears once wallet is connected -->
+          <!-- When disconnected: show two buttons side-by-side.
+               When connected: show ONLY upgrade button, centered. -->
+          <div class="hero-actions-centered hero-actions-duo" id="homeActionsWrap">
             <button id="connectStartBtn" class="btn btn-glow" type="button">
               <span class="btn-shine" aria-hidden="true"></span>
               Connect Wallet to Reveal Links
             </button>
 
-            <!-- Remains after connect (and can be clicked to dismiss itself) -->
-            <button id="upgradeBtn" class="btn btn-upgrade" type="button" hidden>
+            <button id="upgradeBtn" class="btn btn-upgrade" type="button">
               $399 for 95% commission
               <span class="btn-arrow" aria-hidden="true">→</span>
             </button>
@@ -331,6 +331,27 @@
         </div>
       </section>
     </main>
+
+    <!-- Upgrade requires wallet modal -->
+    <div id="walletModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-modal-close="true"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="Connect wallet required">
+        <div class="modal-top">
+          <div class="modal-title">Connect wallet required</div>
+          <button class="modal-x" type="button" data-modal-close="true" aria-label="Close">✕</button>
+        </div>
+        <div class="modal-sub">
+          To continue with the <span class="accent2">95% commission</span> upgrade, connect your wallet first.
+        </div>
+        <div class="modal-actions">
+          <button id="modalConnectBtn" class="btn btn-primary" type="button">
+            <span class="btn-dot" aria-hidden="true"></span>
+            Connect Wallet
+          </button>
+          <button class="btn btn-ghost" type="button" data-modal-close="true">Not now</button>
+        </div>
+      </div>
+    </div>
 
     <footer class="footer">
       <div class="footer-inner">
