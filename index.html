@@ -21,7 +21,7 @@
         <h1 class="brand-title">LinkCryptVault</h1>
 
         <div class="header-actions">
-          <!-- Only visible when connected -->
+          <!-- Only visible when "connected" -->
           <button id="disconnectBtn" class="btn btn-ghost btn-header" type="button" hidden>
             Disconnect
           </button>
@@ -61,8 +61,8 @@
             unwanted audiences. Payouts and splits are enforced using <span class="accent2">smart contracts</span>.
           </p>
 
-          <!-- When disconnected: show two buttons side-by-side.
-               When connected: show ONLY upgrade button, centered. -->
+          <!-- Disconnected: show BOTH buttons.
+               Connected: show ONLY upgrade button, centered. -->
           <div class="hero-actions-centered hero-actions-duo" id="homeActionsWrap">
             <button id="connectStartBtn" class="btn btn-glow" type="button">
               <span class="btn-shine" aria-hidden="true"></span>
@@ -337,11 +337,11 @@
       <div class="modal-backdrop" data-modal-close="true"></div>
       <div class="modal-card" role="dialog" aria-modal="true" aria-label="Connect wallet required">
         <div class="modal-top">
-          <div class="modal-title">Connect wallet required</div>
+          <div class="modal-title">Wallet required</div>
           <button class="modal-x" type="button" data-modal-close="true" aria-label="Close">✕</button>
         </div>
         <div class="modal-sub">
-          To continue with the <span class="accent2">95% commission</span> upgrade, connect your wallet first.
+          You need to connect your wallet to continue.
         </div>
         <div class="modal-actions">
           <button id="modalConnectBtn" class="btn btn-primary" type="button">
