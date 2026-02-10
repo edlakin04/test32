@@ -4,21 +4,28 @@ const state = {
   connected: false,
   publicKey: null,
   view: "home",
+
+  // Home CTA flow
+  connectCtaDismissed: false,
+  upgradeCtaDismissed: false,
+
+  // Upgrade (UI only)
+  upgraded: false,
 };
 
 const PARTNERS = [
-  { name: "NovaSwap", url: "https://novaswap.exchange/affiliates" },
-  { name: "ArcadePerps", url: "https://arcadeperps.io/partners/apply" },
-  { name: "StableBridge", url: "https://stablebridge.com/affiliate-program" },
-  { name: "FrostWallet", url: "https://frostwallet.app/affiliates" },
-  { name: "KiteLaunch", url: "https://kitelaunch.xyz/affiliate" },
-  { name: "PulseStake", url: "https://pulsestake.finance/partners" },
-  { name: "OrbitLend", url: "https://orbitlend.io/affiliate" },
-  { name: "DeltaOTC", url: "https://deltaotc.market/affiliates" },
-  { name: "MirageNFT", url: "https://miragenft.art/affiliate-program" },
-  { name: "ApexSignals", url: "https://apexsignals.trade/partners" },
-  { name: "ZenBridge", url: "https://zenbridge.network/affiliate" },
-  { name: "VoltFutures", url: "https://voltfutures.exchange/affiliate" },
+  { id: "nova", name: "NovaSwap", url: "https://novaswap.exchange/affiliates" },
+  { id: "arcade", name: "ArcadePerps", url: "https://arcadeperps.io/partners/apply" },
+  { id: "stable", name: "StableBridge", url: "https://stablebridge.com/affiliate-program" },
+  { id: "frost", name: "FrostWallet", url: "https://frostwallet.app/affiliates" },
+  { id: "kite", name: "KiteLaunch", url: "https://kitelaunch.xyz/affiliate" },
+  { id: "pulse", name: "PulseStake", url: "https://pulsestake.finance/partners" },
+  { id: "orbit", name: "OrbitLend", url: "https://orbitlend.io/affiliate" },
+  { id: "delta", name: "DeltaOTC", url: "https://deltaotc.market/affiliates" },
+  { id: "mirage", name: "MirageNFT", url: "https://miragenft.art/affiliate-program" },
+  { id: "apex", name: "ApexSignals", url: "https://apexsignals.trade/partners" },
+  { id: "zen", name: "ZenBridge", url: "https://zenbridge.network/affiliate" },
+  { id: "volt", name: "VoltFutures", url: "https://voltfutures.exchange/affiliate" },
 ];
 
 function getPhantom() {
@@ -42,14 +49,13 @@ function maskNamePartial(name) {
   return `${first}${mid}${last}`;
 }
 
-/* Mask URL: keep protocol + a tiny hint, star main bit, keep tail */
+/* Mask URL: keep protocol + small head + tail visible */
 function maskUrlPartial(url) {
   if (!url) return "—";
   const protoMatch = url.match(/^(https?:\/\/)/i);
   const proto = protoMatch ? protoMatch[1] : "";
   const rest = proto ? url.slice(proto.length) : url;
 
-  // keep first 2 chars of rest + last 4 chars
   if (rest.length <= 10) return proto + "★".repeat(Math.max(8, rest.length));
   const head = rest.slice(0, 2);
   const tail = rest.slice(-4);
@@ -94,25 +100,61 @@ function setHeaderButtons() {
   }
 }
 
-function renderHomeConnectButtonVisibility() {
-  const wrap = document.getElementById("homeConnectWrap");
-  if (!wrap) return;
-  wrap.style.display = state.connected ? "none" : "flex";
+function renderHomeActions() {
+  const connectBtn = document.getElementById("connectStartBtn");
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  if (!connectBtn || !upgradeBtn) return;
+
+  // If wallet connected, never show the connect CTA again
+  if (state.connected) {
+    connectBtn.hidden = true;
+    upgradeBtn.hidden = true;
+    return;
+  }
+
+  // If user hasn't pressed connect CTA yet, show it
+  if (!state.connectCtaDismissed) {
+    connectBtn.hidden = false;
+    upgradeBtn.hidden = true;
+    return;
+  }
+
+  // After connect CTA pressed, show upgrade CTA (until dismissed)
+  connectBtn.hidden = true;
+  upgradeBtn.hidden = !!state.upgradeCtaDismissed;
+}
+
+function currentRevShare() {
+  // UI logic: if upgraded, show 95% for connected users; otherwise 50%
+  if (state.connected && state.upgraded) return "95%";
+  return "50%";
 }
 
 function renderPartnersTable() {
   const tbody = document.getElementById("partnersTbody");
   if (!tbody) return;
 
+  const revShare = currentRevShare();
+
   const rows = PARTNERS.map((p) => {
     const displayName = state.connected ? p.name : maskNamePartial(p.name);
     const displayUrl = state.connected ? p.url : maskUrlPartial(p.url);
 
+    const locked = !state.connected;
+    const lockIcon = locked ? `<span class="lock" aria-hidden="true">🔒</span>` : "";
+    const btnDisabled = locked ? "disabled" : "";
+    const btnClass = locked ? "btn-mini btn-mini-locked" : "btn-mini";
+
     return `
       <tr>
         <td class="td-strong">${displayName}</td>
-        <td><span class="deal">50%</span></td>
+        <td><span class="deal">${revShare}</span></td>
         <td class="mono">${displayUrl}</td>
+        <td class="td-actions">
+          <button class="${btnClass}" data-generate="${p.id}" ${btnDisabled} type="button">
+            Generate ${lockIcon}
+          </button>
+        </td>
       </tr>
     `;
   }).join("");
@@ -157,7 +199,7 @@ function renderLinksPage() {
             <td colspan="3">
               <div class="empty-state">
                 <div class="empty-title">No links yet</div>
-                <div class="empty-text">Select a partner to generate your affiliate link.</div>
+                <div class="empty-text">Use Generate on a partner to create your affiliate link.</div>
               </div>
             </td>
           </tr>
@@ -239,7 +281,7 @@ function renderStats() {
 
 function renderAll() {
   setHeaderButtons();
-  renderHomeConnectButtonVisibility();
+  renderHomeActions();
   renderPartnersTable();
   renderLinksPage();
   renderAnalyticsPage();
@@ -280,6 +322,69 @@ async function disconnectWallet() {
   renderAll();
 }
 
+function buildAffiliateLink(partner) {
+  // UI-only link format (placeholder)
+  const base = partner.url;
+  const ref = state.publicKey ? state.publicKey.slice(0, 8) : "anonymous";
+  return `${base}${base.includes("?") ? "&" : "?"}ref=${encodeURIComponent(ref)}`;
+}
+
+async function handleGenerate(partnerId) {
+  if (!state.connected) return;
+
+  const partner = PARTNERS.find((p) => p.id === partnerId);
+  if (!partner) return;
+
+  const link = buildAffiliateLink(partner);
+
+  try {
+    await navigator.clipboard.writeText(link);
+    alert(`Affiliate link copied:\n\n${link}`);
+  } catch {
+    alert(`Affiliate link:\n\n${link}`);
+  }
+}
+
+function attachEvents() {
+  document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
+  document.getElementById("disconnectBtn")?.addEventListener("click", disconnectWallet);
+
+  // Home CTA flow
+  document.getElementById("connectStartBtn")?.addEventListener("click", async () => {
+    // Hide the connect CTA immediately (as requested), then attempt connect via Phantom
+    state.connectCtaDismissed = true;
+    renderHomeActions();
+    await connectWallet();
+  });
+
+  document.getElementById("upgradeBtn")?.addEventListener("click", () => {
+    // UI-only “purchase”: mark upgraded and remove the button
+    state.upgradeCtaDismissed = true;
+    state.upgraded = true;
+    renderAll();
+  });
+
+  // Nav
+  document.querySelectorAll(".nav-link").forEach((btn) => {
+    btn.addEventListener("click", () => showView(btn.dataset.view));
+  });
+
+  // Table generate buttons (event delegation)
+  document.addEventListener("click", (e) => {
+    const target = e.target;
+    if (!(target instanceof Element)) return;
+
+    const btn = target.closest("[data-generate]");
+    if (!btn) return;
+
+    const partnerId = btn.getAttribute("data-generate");
+    if (!partnerId) return;
+
+    if (btn instanceof HTMLButtonElement && btn.disabled) return;
+    handleGenerate(partnerId);
+  });
+}
+
 function syncIfAlreadyConnected() {
   const phantom = getPhantom();
   if (!phantom) return;
@@ -299,16 +404,6 @@ function syncIfAlreadyConnected() {
       state.publicKey = null;
     }
     renderAll();
-  });
-}
-
-function attachEvents() {
-  document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
-  document.getElementById("connectStartBtn")?.addEventListener("click", connectWallet);
-  document.getElementById("disconnectBtn")?.addEventListener("click", disconnectWallet);
-
-  document.querySelectorAll(".nav-link").forEach((btn) => {
-    btn.addEventListener("click", () => showView(btn.dataset.view));
   });
 }
 
